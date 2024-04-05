@@ -1,0 +1,15 @@
+Package: sHDL
+Type: Package
+Title: Stratified high-definition likelihood inference of heritability
+        enrichment
+Version: 0.1.0
+Author: Ao Lan, Xia Shen
+Maintainer: Ao Lan <lanao15@126.com>
+Description: The functions return estimation and standard error of heritability and heritability enrichment fold of given trait based on GWAS summary statistics.
+License: GPL (>= 3)
+Imports: dplyr, parallel
+Depends: R (>= 3.1.1)
+Encoding: UTF-8
+RoxygenNote: 7.1.2
+NeedsCompilation: no
+Packaged: 2024-04-03 13:16:16 UTC; lanao
