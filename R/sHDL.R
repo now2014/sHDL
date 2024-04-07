@@ -23,6 +23,7 @@
 #' @param start.v A vector of starting values \code{c(fold, h2, intercept)} for optimization.
 #' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
+#' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector D is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector D is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector D is not normalized.
 #' @note Users can download the precomputed eigenvalues and eigenvectors of LD correlation matrices for European ancestry population. The download link can be found at https://github.com/zhenin/HDL/wiki/Reference-panels
 #' These are the LD matrices and their eigen-decomposition from 335,265 genomic British UK Biobank individuals. Three sets of reference panel are provided:
 #' 1) 1,029,876 QCed UK Biobank imputed HapMap3 SNPs. The size is about 33 GB after unzipping. Although it takes more time, using the imputed panel provides more accurate estimates of genetic correlations.
@@ -82,7 +83,7 @@ sHDL <-function(
   Dr.path = "./Dr", overwrite = FALSE, verbose = FALSE,
   fix.h2 = NULL, fix.intercept = NULL, maxit=1000,
   pgtol=1e-3, start.v = c(1, 0.1, 1), mode=c("disk", "memory"),
-  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", norm.method=c("minmax", "scaled", "none")){
 
   mode <- match.arg(mode)
   if(!is.null(output.file)){
@@ -98,11 +99,7 @@ sHDL <-function(
     clust <- NULL
   }
 
-  ## min-max normalization on D
-  minv <- min(D, na.rm = T)
-  maxv <- max(D, na.rm = T)
-  D <- (D - minv)/(maxv - minv)
-  D <- D[setdiff(names(D), D[duplicated(names(D))])] ## remove duplicates
+  D <- sHDL:::normD(D, LD.path, log.file=log.file, norm.method=norm.method, pattern=pattern)
 
   message("Formating GWAS summary statistics ...\n")
   gwas.df <- format.gwas(gwas.df, LD.path, fill.missing.N, log.file, pattern)

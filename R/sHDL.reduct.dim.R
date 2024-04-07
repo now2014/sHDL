@@ -11,6 +11,7 @@
 #' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
 #' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}.
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
+#' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector D is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector D is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector D is not normalized.
 #' @return A list is returned with:
 #' \itemize{
 #' \item{Dr }{The reduct RDR matrix.}
@@ -25,7 +26,7 @@
 
 sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
   Dr.path=NULL, overwrite=FALSE, mode=c("disk", "memory"), nthreads=1,
-  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", norm.method=c("minmax", "scaled", "none")){
   # use RhpcBLASctl to control the number of thread
   blas_set_num_threads(nthreads)
   omp_set_num_threads(nthreads)
@@ -82,7 +83,7 @@ sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
     }
 
     if(!is.null(D) && is.null(Dr)){
-      D[is.na(D)] <- 0
+      D <- sHDL:::normD(D, LD.path, norm.method=norm.method, pattern=pattern)
       dD <- numeric(M)
       names(dD) <- snps.ref
       int.snps <- intersect(snps.ref, names(D))

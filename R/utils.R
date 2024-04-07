@@ -3,7 +3,6 @@
 #' @keywords internal
 format.gwas <- function(gwas.df, LD.path, fill.missing.N = NULL, log.file = "",
   pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
-  LD.files <- list.files(LD.path)
 
   bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim', pattern=pattern)
   bim <- do.call(rbind, lapply(
@@ -220,4 +219,87 @@ log.lik.wg <- function(param, ref.data, Md, M, N,
     fold, h2, intercept, lnL, time
   ), file=log.file, append=T)
   return(lnL)
+}
+
+#' @title D normalization
+#' @noRd
+#' @keywords internal
+normD <-function(
+  D, LD.path, log.file="", norm.method=c("minmax", "scaled", "none"),
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
+
+  method <- match.arg(norm.method)
+  bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim', pattern=pattern)
+  bim <- do.call(rbind, lapply(
+    bim.files, read.table, header=F,
+    col.names=c('CHR', 'SNP', 'CM', 'POS', 'A1', 'A2')
+  ))
+  ref.snps <- bim$SNP
+  M <- nrow(bim)
+  dup.snps <- names(D)[duplicated(names(D))]
+  D <- D[setdiff(names(D), dup.snps)] ## remove duplicates
+
+  int.snps <- intersect(ref.snps, names(D))
+  dD <- rep(0, M)
+  names(dD) <- ref.snps
+  dD[int.snps] <- D[int.snps]
+  dD[is.na(dD)] <- 0
+  D <- dD
+  minv <- min(D)
+
+  if(method == "minmax"){
+    maxv <- max(D)
+    D <- (D - minv)/(maxv - minv)
+    Md <- sum(D > 0)
+  }else if(method == "scaled"){
+    if(minv < 0){
+      D <- D - minv
+    }
+    Md <- sum(D > 0)
+    if(Md == M){
+      D <- D - min(D)
+    }
+    D <- Md / sum(D) * D
+  }else if(method=="none"){
+    if(minv < 0) warn.msg <- "The annotation weights contain negative values, which may cause bias in the estimation.\n"
+    if(log.file != ""){
+      cat(warn.msg, file = log.file, append = T)
+    }else{
+      warning(warn.msg)
+    }
+    Md <- sum(D != 0)
+    msg <- sprintf("No normalization applied on %d (%.3f)%% annotated variants. The upper boundary for enrichment fold is %.3f.\n",
+      Md, Md/M, M/sum(D))
+    if(log.file != ""){
+      cat(msg, file = log.file, append = T)
+    }else{
+      cat(msg)
+    }
+    return(D)
+  }else{
+    stop("Unknown normalization method.")
+  }
+
+  msg <- sprintf("Applied `%s` weight nomalization on %d (%.3f)%% annotated variants.\n",
+    method, Md, Md/M*100)
+  msg <- sprintf("%sThe upper boundary for enrichment fold is %.3f", msg, M/sum(D))
+  if(sum(D)/M > 0.9 && method == "scaled"){
+    warn.msg <- paste0(msg, ", which is very close to 1, please consider the `minmax` option or reducing the dense of annotations.\n")
+    msg <- NULL
+  }else if(sum(D)/M > 0.9){
+    warn.msg <- paste0(msg, ", which is very close to 1, please consider reducing the dense of annotations.\n")
+    msg <- NULL
+  }else{
+    msg <- paste0(msg, ".\n")
+    warn.msg <- NULL
+  }
+  
+  if(log.file != ""){
+    if(!is.null(msg)) cat(msg, file = log.file, append = T)
+    if(!is.null(warn.msg)) cat(warn.msg, file = log.file, append = T)
+  }else{
+    if(!is.null(msg)) cat(msg)
+    if(!is.null(warn.msg)) warning(warn.msg)
+  }
+  return(D)
 }

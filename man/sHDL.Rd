@@ -23,7 +23,8 @@ sHDL(
   pgtol = 0.001,
   start.v = c(1, 0.1, 1),
   mode = c("disk", "memory"),
-  pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"
+  pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*",
+  norm.method = c("minmax", "scaled", "none")
 )
 }
 \arguments{
@@ -66,6 +67,8 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 \item{mode}{Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.}
 
 \item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
+
+\item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector D is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector D is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector D is not normalized.}
 }
 \value{
 A list is returned with:

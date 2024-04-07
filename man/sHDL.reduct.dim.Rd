@@ -13,7 +13,8 @@ sHDL.reduct.dim(
   overwrite = FALSE,
   mode = c("disk", "memory"),
   nthreads = 1,
-  pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"
+  pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*",
+  norm.method = c("minmax", "scaled", "none")
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ sHDL.reduct.dim(
 \item{nthreads}{Number of threads to use for matrix operations, default \code{nthreads = 1}.}
 
 \item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
+
+\item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector D is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector D is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector D is not normalized.}
 
 \item{LD.file}{Path to the \code{.rda} file where the Eigen decomposition of LD matrix is stored.}
 }
