@@ -35,6 +35,7 @@ sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
   mode <- match.arg(mode)
   LD.files <- sHDL:::list.LD.ref.files(LD.path, suffix=".rda", pattern=pattern)
 
+  if(!is.null(D)) D <- sHDL:::normD(D, LD.path, norm.method=norm.method, pattern=pattern)
   ref.data <- list()
   for(i in seq_along(LD.files)){
     LD.file <- LD.files[i]
@@ -83,7 +84,6 @@ sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
     }
 
     if(!is.null(D) && is.null(Dr)){
-      D <- sHDL:::normD(D, LD.path, norm.method=norm.method, pattern=pattern)
       dD <- numeric(M)
       names(dD) <- snps.ref
       int.snps <- intersect(snps.ref, names(D))
