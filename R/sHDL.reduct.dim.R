@@ -40,11 +40,11 @@ sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
   for(i in seq_along(LD.files)){
     LD.file <- LD.files[i]
     if(!is.null(Dr.path)) Dr.file <- paste0(Dr.path, "/", basename(LD.file))
-    if(!is.null(Dr.path) && file.exists(Dr.file) && !overwrite && is.null(D) && mode=="disk"){
+    if(!is.null(Dr.path) && file.exists(Dr.file) && !overwrite && mode=="disk"){
       Dr <- Dr.file
       Md <- NULL
       lam <- NULL
-    }else if(!is.null(Dr.path) && file.exists(Dr.file) && !overwrite && is.null(D) && mode=="memory"){
+    }else if(!is.null(Dr.path) && file.exists(Dr.file) && !overwrite && mode=="memory"){
       load(Dr.file) # Dr, lam, Md, M
     }else{
       Dr <- NULL
