@@ -1,4 +1,6 @@
-# sHDL: Stratified high-definition likelihood inference of heritability enrichment
+# sHDL <img src="logo.png" align="right" height=140/>
+### Stratified high-definition likelihood inference of heritability enrichment
+<br>
 
 ## Installation 
 
