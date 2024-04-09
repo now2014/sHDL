@@ -10,7 +10,7 @@
 
 To install the latest version of `sHDL` package via Github, run the following commands in `R`:
 
-```{r}
+```R
 install.packages(c("RhpcBLASctl", "dplyr", "parallel")) # install required packages
 remotes::install_github("now2024/sHDL")
 ```
@@ -24,7 +24,7 @@ remotes::install_github("now2024/sHDL")
 
 ## Vignette
 
-```{r}
+```R
 remotes::install_github("zhenin/HDL/HDL")
 data(gwas1.example, package='HDL')
 
@@ -48,7 +48,7 @@ system("rm -rf ./Dr") # remove the Dr directory
 
 For more detailed help in `R`
 
-```{r}
+```R
 ?sHDL
 ```
 
