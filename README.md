@@ -51,9 +51,9 @@ For more detailed help in `R`
 ?sHDL
 ```
 
-## Detailed example
+## More detailed tutorial
 
-You can view an example of `sHDL` in this [wiki-page](https://github.com/now2014/sHDL/wiki/Example-of-sHDL).
+For more detailed tutorial please go to [this example](https://now2014.github.io/sHDL/articles/Example.html).
 
 ## Citation
 
