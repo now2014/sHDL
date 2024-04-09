@@ -44,6 +44,7 @@
 #' \item{fold.p }{P-value based on Wald test for the estimated heritability enrichment fold.}
 #' \item{h2.p }{P-value based on Wald test for the estimated heritability.}
 #' \item{intercept.p }{P-value based on Wald test for the estimated intercept.}
+#' \item{stepwise }{Whether the optimization is done in a stepwise manner.}
 #' \item{converged }{Whether the optimization converges.}
 #' \item{message }{The message returned by \code{\link{optim}}.}
 #' }
