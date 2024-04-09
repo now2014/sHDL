@@ -1,6 +1,4 @@
-#' Stratified High-Definition Likelihood (sHDL) Inference of Heritability Enrichment
-#'
-#' The function return estimation and standard error of heritability enrichment fold of trait based on GWAS summary statistics.
+#' Perform heritability enrichment analysis of trait based on GWAS summary statistics.
 #'
 #' @param D A vector of genomic annotations with vector names of SNP IDs.
 #' @param gwas.df A data frame including GWAS summary statistics of genetic variants for a trait.

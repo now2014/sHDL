@@ -2,7 +2,7 @@
 % Please edit documentation in R/sHDL.R
 \name{sHDL}
 \alias{sHDL}
-\title{Stratified High-Definition Likelihood (sHDL) Inference of Heritability Enrichment}
+\title{Perform heritability enrichment analysis of trait based on GWAS summary statistics.}
 \usage{
 sHDL(
   D,
@@ -89,7 +89,7 @@ A list is returned with:
 }
 }
 \description{
-The function return estimation and standard error of heritability enrichment fold of trait based on GWAS summary statistics.
+Perform heritability enrichment analysis of trait based on GWAS summary statistics.
 }
 \note{
 Users can download the precomputed eigenvalues and eigenvectors of LD correlation matrices for European ancestry population. The download link can be found at https://github.com/zhenin/HDL/wiki/Reference-panels

@@ -2,7 +2,7 @@
 % Please edit documentation in R/sHDL.reduct.dim.R
 \name{sHDL.reduct.dim}
 \alias{sHDL.reduct.dim}
-\title{Stratified High-Definition Likelihood (sHDL) Inference of Heritability Enrichment}
+\title{Reduce the dimension of covariance matrix by converting z (D) to zr (Dr).}
 \usage{
 sHDL.reduct.dim(
   LD.path,
@@ -49,5 +49,5 @@ A list is returned with:
 }
 }
 \description{
-The function reduces the dimension of covariance matrix by converting z (D) to zr (Dr).
+Reduce the dimension of covariance matrix by converting z (D) to zr (Dr).
 }

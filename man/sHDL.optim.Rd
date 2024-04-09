@@ -2,7 +2,7 @@
 % Please edit documentation in R/sHDL.optim.R
 \name{sHDL.optim}
 \alias{sHDL.optim}
-\title{Stratified High-Definition Likelihood (sHDL) Inference of Heritability Enrichment}
+\title{Maximize the log likelihood to infer the heritability enrichment fold.}
 \usage{
 sHDL.optim(
   ref.data,
@@ -72,5 +72,5 @@ A list is returned with:
 }
 }
 \description{
-The function maximizes the log likelihood to infer the heritability enrichment fold.
+Maximize the log likelihood to infer the heritability enrichment fold.
 }

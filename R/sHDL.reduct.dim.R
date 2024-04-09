@@ -1,6 +1,4 @@
-#' Stratified High-Definition Likelihood (sHDL) Inference of Heritability Enrichment
-#'
-#' The function reduces the dimension of covariance matrix by converting z (D) to zr (Dr).
+#' Reduce the dimension of covariance matrix by converting z (D) to zr (Dr).
 #'
 #' @param LD.file Path to the \code{.rda} file where the Eigen decomposition of LD matrix is stored.
 #' @param D A vector of genomic annotations with vector names of SNP IDs.

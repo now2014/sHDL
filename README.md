@@ -1,6 +1,4 @@
-# sHDL <img src="logo.png" align="right" height=140/>
-
-### Stratified high-definition likelihood inference of heritability enrichment
+# Stratified high-definition likelihood inference of heritability enrichment <img src="logo.png" align="right" height=140/>
 
 <br>
 
@@ -11,7 +9,8 @@
 To install the latest version of `sHDL` package via Github, run the following commands in `R`:
 
 ```R
-install.packages(c("RhpcBLASctl", "dplyr", "parallel")) # install required packages
+# install required packages
+install.packages(c("RhpcBLASctl", "dplyr", "parallel"))
 remotes::install_github("now2024/sHDL")
 ```
 
@@ -22,7 +21,7 @@ remotes::install_github("now2024/sHDL")
 
 - The eigenvalues and eigenvectors of LD matrices from `HDL`, refer to the [instruction](https://github.com/zhenin/HDL/wiki/Reference-panels) in the [HDL wiki](https://github.com/zhenin/HDL/wiki).
 
-## Vignette
+## Quick vignette
 
 ```R
 remotes::install_github("zhenin/HDL/HDL")
