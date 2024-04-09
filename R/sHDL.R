@@ -99,8 +99,6 @@ sHDL <-function(
     clust <- NULL
   }
 
-  D <- sHDL:::normD(D, LD.path, log.file=log.file, norm.method=norm.method, pattern=pattern)
-
   message("Formating GWAS summary statistics ...\n")
   gwas.df <- format.gwas(gwas.df, LD.path, fill.missing.N, log.file, pattern)
 
@@ -112,7 +110,7 @@ sHDL <-function(
   message("Converting z (D) to zr (Dr) ...\n")
   ref.data <- sHDL:::sHDL.reduct.dim(LD.path, z=z, D=D, lam.cut=lam.cut,
     Dr.path=Dr.path, overwrite=overwrite, mode=mode,
-    nthreads=nthreads, pattern=pattern)
+    nthreads=nthreads, pattern=pattern, norm.method=norm.method)
   M <- sum(unlist(lapply(ref.data, function(x) x$M)))
   Md <- sum(unlist(lapply(ref.data, function(x) x$Md)))
 
