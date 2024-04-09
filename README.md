@@ -1,5 +1,7 @@
 # sHDL <img src="logo.png" align="right" height=140/>
+
 ### Stratified high-definition likelihood inference of heritability enrichment
+
 <br>
 
 
@@ -7,6 +9,7 @@
 ## Installation 
 
 To install the latest version of `sHDL` package via Github, run the following commands in `R`:
+
 ```{r}
 install.packages(c("RhpcBLASctl", "dplyr", "parallel")) # install required packages
 remotes::install_github("now2024/sHDL")
@@ -48,6 +51,10 @@ For more detailed help in `R`
 ```{r}
 ?sHDL
 ```
+
+## Detailed example
+
+You can view an example of `sHDL` in this [wiki-page](https://github.com/now2014/sHDL/wiki/Example-of-sHDL).
 
 ## Citation
 
