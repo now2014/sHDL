@@ -2,12 +2,13 @@
 ### Stratified high-definition likelihood inference of heritability enrichment
 <br>
 
+
+
 ## Installation 
 
 To install the latest version of `sHDL` package via Github, run the following commands in `R`:
-```{r eval = FALSE}
-install.packages(c("RhpcBLASctl", "dplyr", "parallel"))
-remotes::install_github("zhenin/HDL/HDL") # for vignette
+```{r}
+install.packages(c("RhpcBLASctl", "dplyr", "parallel")) # install required packages
 remotes::install_github("now2024/sHDL")
 ```
 
@@ -20,11 +21,13 @@ remotes::install_github("now2024/sHDL")
 
 ## Vignette
 
-```{r eval = FALSE}
+```{r}
+remotes::install_github("zhenin/HDL/HDL")
+data(gwas1.example, package='HDL')
+
 library(sHDL)
 
 ## The GWAS summary statistics for birth weight loaded from HDL package.
-data(gwas1.example, package='HDL')
 M <- nrow(gwas1.example)
 set.seed(1234)
 D <- rbinom(M, 1, 0.01) # random D vector
@@ -42,7 +45,7 @@ system("rm -rf ./Dr") # remove the Dr directory
 
 For more detailed help in `R`
 
-```{r eval = FALSE}
+```{r}
 ?sHDL
 ```
 
