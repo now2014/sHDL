@@ -268,7 +268,7 @@ normD <-function(
       warning(warn.msg)
     }
     Md <- sum(D != 0)
-    msg <- sprintf("No normalization applied on %d (%.3f)%% annotated variants. The upper boundary for enrichment fold is %.3f.\n",
+    msg <- sprintf("No normalization applied on %d (%.3f%%) annotated variants. The upper boundary for enrichment fold is %.3f.\n",
       Md, Md/M, M/sum(D))
     if(log.file != ""){
       cat(msg, file = log.file, append = T)
@@ -280,7 +280,7 @@ normD <-function(
     stop("Unknown normalization method.")
   }
 
-  msg <- sprintf("Applied `%s` weight nomalization on %d (%.3f)%% annotated variants.\n",
+  msg <- sprintf("Applied `%s` weight nomalization on %d (%.3f%%) annotated variants.\n",
     method, Md, Md/M*100)
   msg <- sprintf("%sThe upper boundary for enrichment fold is %.3f", msg, M/sum(D))
   if(sum(D)/M > 0.9 && method == "scaled"){
