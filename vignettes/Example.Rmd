@@ -191,7 +191,7 @@ In this example, we will create a binary annotation of all genes based on the ge
   D <- rep(1, length(snps))
   names(D) <- snps
   
-  saveRDS(gwas.df, file='D.rds') # save the annotation weights for sHDL
+  saveRDS(D, file='D.rds') # save the annotation weights for sHDL
   ```
 
 **Notice**: `sHDL` will automatically align `D` to the LD reference panel according to `rsid`, and set the weights of missing variants in the LD reference panel to **ZERO**.

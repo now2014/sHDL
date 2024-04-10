@@ -264,9 +264,9 @@ normD <-function(
     D <- Md / sum(D) * D
   }else if(method=="none"){
     if(minv < 0) warn.msg <- "The annotation weights contain negative values, which may cause bias in the estimation.\n"
-    if(log.file != ""){
+    if(log.file != "" && !is.null(warn.msg)){
       cat(warn.msg, file = log.file, append = T)
-    }else{
+    }else if(!is.null(warn.msg)){
       warning(warn.msg)
     }
     Md <- sum(D != 0)

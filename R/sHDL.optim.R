@@ -149,6 +149,12 @@ sHDL.optim <- function(
   if(!is.null(log.file)){
     write.table(unlist(res), log.file, sep="\t", quote=F, row.names = T, col.names = F, append = TRUE)
   }
-  if(!is.null(clust)) suppressWarnings(stopCluster(clust))
+  if(!is.null(clust)){
+    tmp <- tryCatch({
+      suppressWarnings(stopCluster(clust))
+    }, error = function(e){
+      NULL
+    })
+  }
   return(res)
 }
