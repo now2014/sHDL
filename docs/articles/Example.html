@@ -49,8 +49,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-tutorials">Tutorials</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-tutorials">
     <a class="dropdown-item" href="../articles/Example.html">Example of sHDL</a>
-    <a class="dropdown-item" href="../articles/Rebuild.html">Mismatched LD reference panel</a>
     <a class="dropdown-item" href="../articles/Annotation.html">Genomic annotations</a>
+    <a class="dropdown-item" href="../articles/Rebuild.html">Mismatched LD reference panel</a>
   </div>
 </li>
       </ul>
@@ -155,11 +155,11 @@ UK Biobank Axiom Array</strong>.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span> <span class="co"># GWAS summary statistics from the Neale Lab round 2 GWAS of UK Biobank of birth weight.</span></span>
 <span><span class="va">gwas.df</span> <span class="op">&lt;-</span> <span class="va">gwas1.example</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'SNP'</span>, <span class="st">'A1'</span>, <span class="st">'A2'</span>, <span class="st">'Z'</span>, <span class="st">'N'</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">gwas1.example</span>, file<span class="op">=</span><span class="st">'gwas.df.rds'</span><span class="op">)</span> <span class="co"># save the gwas.df for sHDL</span></span></code></pre></div>
-<p>Or you can prepare your data as following:</p>
+<p>Or you can prepare your data as follows:</p>
 <ul>
 <li>
-<p>Step 01. Download the Height GWAS summary statistics from GIANT
-consortium.</p>
+<p>Step 01. Download the Height GWAS summary statistics from the
+GIANT consortium.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-c</span> https://portals.broadinstitute.org/collaboration/giant/images/f/f7/GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR.gz</span></code></pre></div>
 </li>
 <li>
@@ -177,7 +177,7 @@ consortium.</p>
 <span><span class="co"># 5: 1:754182:A:G  rs3131969   1 754182             G            A           0.865000  0.001333110 0.00185 0.470389 1100634</span></span></code></pre></div>
 </li>
 <li>
-<p>Step 03. Select &amp; rename <strong>required 4 columns</strong>
+<p>Step 03. Select &amp; rename <strong>4 required columns</strong>
 for <code>sHDL</code>:</p>
 <ul>
 <li><strong>SNP: rsid of variants</strong></li>
@@ -202,7 +202,7 @@ for <code>sHDL</code>:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">gwas.df</span>, file<span class="op">=</span><span class="st">'gwas.df.rds'</span><span class="op">)</span> <span class="co"># save the gwas.df for sHDL</span></span></code></pre></div>
 </li>
 </ul>
-<p><strong>Notice</strong>: <code>sHDL</code> automatically aligns
+<p><strong>Notice</strong>: <code>sHDL</code> automatically aligns the
 <code>A1</code> allele between input GWAS summary statistics and LD
 reference panel, so <strong>further data wrangling can be
 skipped</strong>.</p>
@@ -214,12 +214,12 @@ skipped</strong>.</p>
 based on the gene locations (hg19).</p>
 <ul>
 <li>
-<p>Step 01. Download the gene locations information from
+<p>Step 01. Download the gene location information from
 <code>GeneBreak</code> package.</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-c</span> https://code.bioconductor.org/browse/GeneBreak/blob/RELEASE_3_18/data/ens.gene.ann.hg19.rda</span></code></pre></div>
 </li>
 <li>
-<p>Step 02. Create binary annotation of all genes.</p>
+<p>Step 02. Create a binary annotation of all genes.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">'ens.gene.ann.hg19.rda'</span><span class="op">)</span> <span class="co"># load ens.gene.ann.hg19</span></span>
 <span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">'/your/path/to/UKB_array_SVD_eigen90_extraction'</span></span>
@@ -261,7 +261,7 @@ based on the gene locations (hg19).</p>
 <span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">snps</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">gwas.df</span>, file<span class="op">=</span><span class="st">'D.rds'</span><span class="op">)</span> <span class="co"># save the annotation weights for sHDL</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">D</span>, file<span class="op">=</span><span class="st">'D.rds'</span><span class="op">)</span> <span class="co"># save the annotation weights for sHDL</span></span></code></pre></div>
 </li>
 </ul>
 <p><strong>Notice</strong>: <code>sHDL</code> will automatically align

@@ -38,13 +38,13 @@ To address this issue, we provide a function to rebuild the LD reference panel b
 Suppose you have gone through [this tutorial](https://now2014.github.io/sHDL/articles/Example.html) and 
 
 * prepared the LD reference panel,
-* installed the `sHDL` and `HDL` package.
+* installed the `sHDL` and `HDL` packages.
 
 In this example, we will demo with the `QCed UK Biobank Axiom Array (307,519 SNPs)` reference panel.
 
 ### Simulate mismatched GWAS SNPs
 
-To simulate mismatched GWAS SNPs, we randomly subset 80% SNPs from the LD reference panel.
+To simulate mismatched GWAS SNPs, we randomly subset 80% of SNPs from the LD reference panel.
 
 ```bash
 library(sHDL)
@@ -58,7 +58,7 @@ gwas.snps <- sample(all.snps, size=floor(length(all.snps) * 0.8), replace=FALSE)
 
 We rebuild the LD reference panel with `gwas.snps` and store the new LD reference panel to `/path/to/new/UKB_array_SVD_eigen90_extraction`.
 
-This process may take a while, you can put the following code into a script and run in background with `nohup`.
+This process may take a while, you can put the following code into a script and run in the background with `nohup`.
 
 ```R
 LD.path.new <- '/path/to/new/UKB_array_SVD_eigen90_extraction'

@@ -90,9 +90,9 @@ gwas.df <- gwas1.example[, c('SNP', 'A1', 'A2', 'Z', 'N')]
 saveRDS(gwas1.example, file='gwas.df.rds') # save the gwas.df for sHDL
 ```
 
-Or you can prepare your data as following:
+Or you can prepare your data as follows:
 
-* Step 01. Download the Height GWAS summary statistics from GIANT consortium.
+* Step 01. Download the Height GWAS summary statistics from the GIANT consortium.
 
   ```bash
   wget -c https://portals.broadinstitute.org/collaboration/giant/images/f/f7/GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR.gz
@@ -112,7 +112,7 @@ Or you can prepare your data as following:
   # 5: 1:754182:A:G  rs3131969   1 754182             G            A           0.865000  0.001333110 0.00185 0.470389 1100634
   ```
   
-* Step 03. Select & rename **required 4 columns** for `sHDL`:
+* Step 03. Select & rename **4 required columns** for `sHDL`:
 
   * **SNP: rsid of variants**
   * **A1: effect allele**
@@ -136,19 +136,19 @@ Or you can prepare your data as following:
   saveRDS(gwas.df, file='gwas.df.rds') # save the gwas.df for sHDL
   ```
 
-**Notice**: `sHDL` automatically aligns `A1` allele between input GWAS summary statistics and LD reference panel, so **further data wrangling can be skipped**.
+**Notice**: `sHDL` automatically aligns the `A1` allele between input GWAS summary statistics and LD reference panel, so **further data wrangling can be skipped**.
 
 ### Genomic annotation
 
 In this example, we will create a binary annotation of all genes based on the gene locations (hg19).
 
-* Step 01. Download the gene locations information from `GeneBreak` package.
+* Step 01. Download the gene location information from `GeneBreak` package.
 
   ```bash
   wget -c https://code.bioconductor.org/browse/GeneBreak/blob/RELEASE_3_18/data/ens.gene.ann.hg19.rda
   ```
 
-* Step 02. Create binary annotation of all genes.
+* Step 02. Create a binary annotation of all genes.
 
   ```R
   load('ens.gene.ann.hg19.rda') # load ens.gene.ann.hg19

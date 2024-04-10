@@ -49,8 +49,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-tutorials">Tutorials</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-tutorials">
     <a class="dropdown-item" href="../articles/Example.html">Example of sHDL</a>
-    <a class="dropdown-item" href="../articles/Rebuild.html">Mismatched LD reference panel</a>
     <a class="dropdown-item" href="../articles/Annotation.html">Genomic annotations</a>
+    <a class="dropdown-item" href="../articles/Rebuild.html">Mismatched LD reference panel</a>
   </div>
 </li>
       </ul>
@@ -119,7 +119,7 @@ and the efficiency might be lost.</li>
 tutorial</a> and</p>
 <ul>
 <li>prepared the LD reference panel,</li>
-<li>installed the <code>sHDL</code> and <code>HDL</code> package.</li>
+<li>installed the <code>sHDL</code> and <code>HDL</code> packages.</li>
 </ul>
 <p>In this example, we will demo with the
 <code>QCed UK Biobank Axiom Array (307,519 SNPs)</code> reference
@@ -127,7 +127,7 @@ panel.</p>
 <div class="section level3">
 <h3 id="simulate-mismatched-gwas-snps">Simulate mismatched GWAS SNPs<a class="anchor" aria-label="anchor" href="#simulate-mismatched-gwas-snps"></a>
 </h3>
-<p>To simulate mismatched GWAS SNPs, we randomly subset 80% SNPs from
+<p>To simulate mismatched GWAS SNPs, we randomly subset 80% of SNPs from
 the LD reference panel.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">library</span><span class="er">(</span><span class="ex">sHDL</span><span class="kw">)</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="ex">LD.path</span> <span class="op">&lt;</span>- <span class="st">'/your/path/to/UKB_array_SVD_eigen90_extraction'</span></span>
@@ -142,7 +142,7 @@ the LD reference panel.</p>
 store the new LD reference panel to
 <code>/path/to/new/UKB_array_SVD_eigen90_extraction</code>.</p>
 <p>This process may take a while, you can put the following code into a
-script and run in background with <code>nohup</code>.</p>
+script and run in the background with <code>nohup</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LD.path.new</span> <span class="op">&lt;-</span> <span class="st">'/path/to/new/UKB_array_SVD_eigen90_extraction'</span></span>
 <span><span class="fu"><a href="../reference/sHDL.reduct.dim.html">sHDL.reduct.dim</a></span><span class="op">(</span><span class="va">LD.path</span>, <span class="va">gwas.snps</span>, <span class="va">LD.path.new</span>, nthreads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span> <span class="co"># run with 8 CPU cores</span></span></code></pre></div>

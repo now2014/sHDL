@@ -16,7 +16,8 @@ navbar:
       menu:
       - text: Example of sHDL
         href: articles/Example.html
-      - text: Mismatched LD reference panel
-        href: articles/Rebuild.html
       - text: Genomic annotations
         href: articles/Annotation.html
+      - text: Mismatched LD reference panel
+        href: articles/Rebuild.html
+
