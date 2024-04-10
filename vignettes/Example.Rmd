@@ -242,38 +242,20 @@ optim.message   CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
 Time difference of 2.521161 mins
 ```
 
-
-
 ## Results of sHDL
 
-```R
-str(res)
-# List of 13
-#  $ time         : num 97.4
-#  $ fold         : num 2.13
-#  $ h2           : num 0.0746
-#  $ intercept    : num 1.66
-#  $ fold.se      : num 0.0113
-#  $ h2.se        : num 0.00149
-#  $ intercept.se : num 0.0204
-#  $ fold.p       : num 0
-#  $ h2.p         : num 0
-#  $ intercept.p  : num 0
-#  $ stepwise     : logi TRUE
-#  $ converged    : logi TRUE
-#  $ optim.message: chr "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
-```
-
-* time: Optimization time for sHDL, **NOT** including the time for converting z (D) to zr (Dr).
-* fold: Estimation for heritability enrichment fold.
-* h2: Estimation for heritability.
-* intercept: Estimation for intercept.
-* fold.se: Standard error of estimation for heritability enrichment fold.
-* h2.se: Standard error of estimation for heritability.
-* intercept.se: Standard error of estimation for intercept.se.
-* fold.p: P-value of estimation for heritability enrichment fold.
-* h2.p: P-value of estimation for heritability.
-* stepwise: Input `stepwise` parameter.
-* converged: Whether the optimization converges or not.
-* optim.message: The optimization message returned by `optim` function in `R`.
+| Item          | Description                                                  |
+| ------------- | ------------------------------------------------------------ |
+| time          | Optimization time for sHDL, **NOT** including the time for converting z (D) to zr (Dr). |
+| fold          | Estimation for heritability enrichment fold.                 |
+| h2            | Estimation for heritability.                                 |
+| intercept     | Estimation for intercept.                                    |
+| fold.se       | Standard error of estimation for heritability enrichment fold. |
+| h2.se         | Standard error of estimation for heritability.               |
+| intercept.se  | Standard error of estimation for intercept.se.               |
+| fold.p        | P-value of estimation for heritability enrichment fold.      |
+| h2.p          | P-value of estimation for heritability.                      |
+| stepwise      | Input `stepwise` parameter.                                  |
+| converged     | Whether the optimization converges or not.                   |
+| optim.message | The optimization message returned by `optim` function in `R`. |
 

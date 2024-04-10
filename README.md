@@ -60,7 +60,7 @@ res.sHDL <- sHDL(D, gwas1.example, LD.path, nthreads=4, stepwise=TRUE, lam.cut=1
 print(as.data.frame(res.sHDL))
 ```
 
-**For more detail** please go to [https://now2014.github.io/sHDL/](https://now2014.github.io/sHDL/).
+**For more detail** please visit [https://now2014.github.io/sHDL/](https://now2014.github.io/sHDL/).
 
 ## Citation
 

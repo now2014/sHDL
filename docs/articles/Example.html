@@ -315,39 +315,68 @@ from <code>HDL</code>) :</p>
 <div class="section level2">
 <h2 id="results-of-shdl">Results of sHDL<a class="anchor" aria-label="anchor" href="#results-of-shdl"></a>
 </h2>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co"># List of 13</span></span>
-<span><span class="co">#  $ time         : num 97.4</span></span>
-<span><span class="co">#  $ fold         : num 2.13</span></span>
-<span><span class="co">#  $ h2           : num 0.0746</span></span>
-<span><span class="co">#  $ intercept    : num 1.66</span></span>
-<span><span class="co">#  $ fold.se      : num 0.0113</span></span>
-<span><span class="co">#  $ h2.se        : num 0.00149</span></span>
-<span><span class="co">#  $ intercept.se : num 0.0204</span></span>
-<span><span class="co">#  $ fold.p       : num 0</span></span>
-<span><span class="co">#  $ h2.p         : num 0</span></span>
-<span><span class="co">#  $ intercept.p  : num 0</span></span>
-<span><span class="co">#  $ stepwise     : logi TRUE</span></span>
-<span><span class="co">#  $ converged    : logi TRUE</span></span>
-<span><span class="co">#  $ optim.message: chr "CONVERGENCE: REL_REDUCTION_OF_F &lt;= FACTR*EPSMCH"</span></span></code></pre></div>
-<ul>
-<li>time: Optimization time for sHDL, <strong>NOT</strong> including the
-time for converting z (D) to zr (Dr).</li>
-<li>fold: Estimation for heritability enrichment fold.</li>
-<li>h2: Estimation for heritability.</li>
-<li>intercept: Estimation for intercept.</li>
-<li>fold.se: Standard error of estimation for heritability enrichment
-fold.</li>
-<li>h2.se: Standard error of estimation for heritability.</li>
-<li>intercept.se: Standard error of estimation for intercept.se.</li>
-<li>fold.p: P-value of estimation for heritability enrichment fold.</li>
-<li>h2.p: P-value of estimation for heritability.</li>
-<li>stepwise: Input <code>stepwise</code> parameter.</li>
-<li>converged: Whether the optimization converges or not.</li>
-<li>optim.message: The optimization message returned by
-<code>optim</code> function in <code>R</code>.</li>
-</ul>
+<table class="table">
+<colgroup>
+<col width="17%">
+<col width="82%">
+</colgroup>
+<thead><tr class="header">
+<th>Item</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>time</td>
+<td>Optimization time for sHDL, <strong>NOT</strong> including the time
+for converting z (D) to zr (Dr).</td>
+</tr>
+<tr class="even">
+<td>fold</td>
+<td>Estimation for heritability enrichment fold.</td>
+</tr>
+<tr class="odd">
+<td>h2</td>
+<td>Estimation for heritability.</td>
+</tr>
+<tr class="even">
+<td>intercept</td>
+<td>Estimation for intercept.</td>
+</tr>
+<tr class="odd">
+<td>fold.se</td>
+<td>Standard error of estimation for heritability enrichment fold.</td>
+</tr>
+<tr class="even">
+<td>h2.se</td>
+<td>Standard error of estimation for heritability.</td>
+</tr>
+<tr class="odd">
+<td>intercept.se</td>
+<td>Standard error of estimation for intercept.se.</td>
+</tr>
+<tr class="even">
+<td>fold.p</td>
+<td>P-value of estimation for heritability enrichment fold.</td>
+</tr>
+<tr class="odd">
+<td>h2.p</td>
+<td>P-value of estimation for heritability.</td>
+</tr>
+<tr class="even">
+<td>stepwise</td>
+<td>Input <code>stepwise</code> parameter.</td>
+</tr>
+<tr class="odd">
+<td>converged</td>
+<td>Whether the optimization converges or not.</td>
+</tr>
+<tr class="even">
+<td>optim.message</td>
+<td>The optimization message returned by <code>optim</code> function in
+<code>R</code>.</td>
+</tr>
+</tbody>
+</table>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

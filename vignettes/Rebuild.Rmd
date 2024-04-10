@@ -30,12 +30,12 @@ To address this issue, we provide a function to rebuild the LD reference panel b
 
 **Warning**:
 
-* For GWAS summary statistics with **severe missing** data, the heritability may be severely underestimated and the efficiency might be lost.
+* For GWAS summary statistics with **severe missingness**, the heritability may be severely underestimated and the efficiency might be lost.
 * This rebuilding process does not resolve the mismatch of **cross-ancestry** LD structures.
 
 ## Example
 
-Suppose you have went through [this tutorial](https://now2014.github.io/sHDL/articles/Example.html) and 
+Suppose you have gone through [this tutorial](https://now2014.github.io/sHDL/articles/Example.html) and 
 
 * prepared the LD reference panel,
 * installed the `sHDL` and `HDL` package.
