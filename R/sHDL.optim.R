@@ -51,8 +51,8 @@ sHDL.optim <- function(
   M <- sum(unlist(lapply(ref.lam.M.Md , function(x) x$M)))
   if(!is.null(fix.intercept) & length(start.v)==3) start.v <- start.v[-3]
   if(!is.null(fix.h2)) start.v <- start.v[-2]
-  if(is.null(lwr)) lwr <- c(2 - M / Md, 0, 0.1)
-  if(is.null(upr)) upr <- c(2 * M / Md - 1, 1, 5)
+  if(is.null(lwr)) lwr <- c(0, 0, 0.1)
+  if(is.null(upr)) upr <- c(M / Md, 1, 5)
 
   
   if(stepwise){
