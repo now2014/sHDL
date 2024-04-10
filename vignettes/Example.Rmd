@@ -1,0 +1,279 @@
+---
+title: "Example of sHDL"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example of sHDL}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Installation
+
+To install the latest version of `sHDL` package via Github, run the following commands in `R`:
+
+```R
+# install required packages
+install.packages(c("RhpcBLASctl", "dplyr", "parallel"))
+remotes::install_github("now2024/sHDL")
+```
+
+The `data.table` package is also required for this example:
+
+```R
+install.packages('data.table')
+```
+
+## Data preparation
+
+### Pre-computed LD reference panels
+
+There are **three** publically available pre-computed **autosome** LD reference panels for the **European-ancestry** population (**335,265 Genomic British individuals in UK Biobank**) from `HDL`:
+
+**Panel 1.** QCed UK Biobank Axiom Array (307,519 SNPs):
+
+```bash
+wget -c -t 1 \
+  https://www.dropbox.com/s/fuvpwsf6r8tjd6c/UKB_array_SVD_eigen90_extraction.tar.gz?dl=0 \
+  --no-check-certificate -O /path/to/UKB_array_SVD_eigen90_extraction.tar.gz
+```
+
+**Panel 2.** QCed UK Biobank imputed HapMap2 (769,306 SNPs):
+
+```bash
+wget -c -t 1 \
+  https://www.dropbox.com/s/4vuktycxz1an6sp/UKB_imputed_hapmap2_SVD_eigen99_extraction.tar.gz?dl=0 \
+  --no-check-certificate -O /path/to/UKB_imputed_hapmap2_SVD_eigen99_extraction.tar.gz
+```
+
+**Panel 3.** QCed UK Biobank imputed HapMap3 (1,029,876 SNPs):
+
+```bash
+wget -c -t 1 \
+  https://www.dropbox.com/s/6js1dzy4tkc3gac/UKB_imputed_SVD_eigen99_extraction.tar.gz?dl=0 \
+  --no-check-certificate -O /path/to/UKB_imputed_SVD_eigen99_extraction.tar.gz
+```
+
+You may download one of the above reference panel according to the SNP density of your GWAS summary statistics, or [build your own LD reference panel](https://github.com/zhenin/HDL/wiki/Build-a-reference-panel). Alternatively, you can download the reference panels via Baidu Netdisk referring to this [FAQ](https://github.com/zhenin/HDL/wiki/FAQ).
+
+
+
+Here, we illustrate the usage of sHDL with the **Panel 2. QCed UK Biobank Axiom Array**.
+
+* Step 01. Download the LD reference panel.
+
+   ```bash
+   wget -c -t 1 https://www.dropbox.com/s/fuvpwsf6r8tjd6c/UKB_array_SVD_eigen90_extraction.tar.gz?dl=0 \ --no-check-certificate -O /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz
+   ```
+
+* Step 02. Extract files from the archive.
+
+  ```bash
+  # checking the md5 = ff3fadd7ea08bd29759b6c652618cd1f
+  md5sum /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz
+  
+  # extraction
+  tar -xvf /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz
+  ```
+
+### GWAS summary statistics
+
+You can test with the dataset from `HDL` directly:
+
+```R
+data(gwas1.example, package='HDL') # GWAS summary statistics from the Neale Lab round 2 GWAS of UK Biobank of birth weight.
+gwas.df <- gwas1.example[, c('SNP', 'A1', 'A2', 'Z', 'N')]
+saveRDS(gwas1.example, file='gwas.df.rds') # save the gwas.df for sHDL
+```
+
+Or you can prepare your data as following:
+
+* Step 01. Download the Height GWAS summary statistics from GIANT consortium.
+
+  ```bash
+  wget -c https://portals.broadinstitute.org/collaboration/giant/images/f/f7/GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR.gz
+  ```
+
+* Step 02. Load the GWAS summary statistics into `R`.
+
+  ```R
+  gwas.df <- data.table::fread('/path/to/GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR.gz', fill=TRUE, header=TRUE)
+  
+  head(gwas.df, 5) # show the first five rows
+  #           SNPID       RSID CHR    POS EFFECT_ALLELE OTHER_ALLELE EFFECT_ALLELE_FREQ         BETA      SE        P       N
+  # 1: 1:566875:C:T  rs2185539   1 566875             T            C           0.002800 -0.046315600 0.03930 0.238128  537968
+  # 2: 1:728951:C:T rs11240767   1 728951             T            C           0.000356  0.167358000 0.12600 0.185025   85591
+  # 3: 1:734462:A:G rs12564807   1 734462             A            G           0.893000  0.004656900 0.01100 0.672866  112953
+  # 4: 1:752721:A:G  rs3131972   1 752721             G            A           0.840000  0.000544089 0.00284  0.84811  615932
+  # 5: 1:754182:A:G  rs3131969   1 754182             G            A           0.865000  0.001333110 0.00185 0.470389 1100634
+  ```
+  
+* Step 03. Select & rename **required 4 columns** for `sHDL`:
+
+  * **SNP: rsid of variants**
+  * **A1: effect allele**
+  * **A2: other allele**
+  * **Z: GWAS Z-score**
+  * **N: Sample size**
+
+  ```R
+  gwas.df$Z <- gwas.df$BETA / gwas.df$SE # calculate the GWAS Z-score
+  gwas.df <- gwas.df[, c('RSID', 'EFFECT_ALLELE', 'OTHER_ALLELE', 'Z', 'N')]
+  colnames(gwas.df) <- c('SNP', 'A1', 'A2', 'Z', 'N')
+  
+  head(gwas.df, 5)
+  #           SNP A1 A2          Z       N
+  # 1:  rs2185539  T  C -1.1785140  537968
+  # 2: rs11240767  T  C  1.3282381   85591
+  # 3: rs12564807  A  G  0.4233545  112953
+  # 4:  rs3131972  G  A  0.1915806  615932
+  # 5:  rs3131969  G  A  0.7206000 1100634
+  
+  saveRDS(gwas.df, file='gwas.df.rds') # save the gwas.df for sHDL
+  ```
+
+**Notice**: `sHDL` automatically aligns `A1` allele between input GWAS summary statistics and LD reference panel, so **further data wrangling can be skipped**.
+
+### Genomic annotation
+
+In this example, we will create a binary annotation of all genes based on the gene locations (hg19).
+
+* Step 01. Download the gene locations information from `GeneBreak` package.
+
+  ```bash
+  wget -c https://code.bioconductor.org/browse/GeneBreak/blob/RELEASE_3_18/data/ens.gene.ann.hg19.rda
+  ```
+
+* Step 02. Create binary annotation of all genes.
+
+  ```R
+  load('ens.gene.ann.hg19.rda') # load ens.gene.ann.hg19
+  LD.path <- '/your/path/to/UKB_array_SVD_eigen90_extraction'
+  
+  ## extract gene locations ##
+  gene.pos <- unique(ens.gene.ann.hg19[, c(3:5)])
+  colnames(gene.pos) <- c('chrom', 'start', 'end')
+  autosomes <- as.character(1:22)
+  gene.pos <- gene.pos[gene.pos$chrom %in% autosomes, ]
+  gene.pos$chrom <- as.numeric(gene.pos$chrom)
+  
+  ## extract variants position from LD reference panel ##
+  bim <- do.call(rbind, lapply(
+    sHDL:::list.LD.ref.files(LD.path, suffix='.bim'), data.table::fread, header=FALSE
+  ))
+  bim <- bim[, c(2, 1, 4)]
+  colnames(bim) <- c('SNP', 'chrom', 'pos')
+  
+  
+  ## match annotated variants ##
+  gene2snp <- function(i, j){
+    cur.chrom <- gene.pos[j, 'chrom']
+    s <- gene.pos[j, 'start']
+    e <- gene.pos[j, 'end']
+    bim <- bim[bim$chrom == cur.chrom, ]
+    bim <- bim[bim$pos >= s & bim$pos <= e, ]
+    snps <- unique(c(i, bim$SNP))
+    nsnps <- length(snps)
+    if(j %% 1000 == 0) cat(sprintf(
+      '# of processed genes %d: # of annotated %d variants (%.2f%%) \n',
+      j, nsnps, nsnps/M*100
+    ))
+    return(snps)
+  }
+  M <- nrow(bim)
+  snps <- Reduce(gene2snp, 1:nrow(gene.pos), init=c())
+  
+  ## create the annotation weights for sHDL ##
+  D <- rep(1, length(snps))
+  names(D) <- snps
+  
+  saveRDS(gwas.df, file='D.rds') # save the annotation weights for sHDL
+  ```
+
+**Notice**: `sHDL` will automatically align `D` to the LD reference panel according to `rsid`, and set the weights of missing variants in the LD reference panel to **ZERO**.
+
+## Run sHDL
+
+```R
+library(sHDL)
+
+LD.path <- '/your/path/to/UKB_array_SVD_eigen90_extraction'
+gwas.df <- readRDS('gwas.df.rds')
+D <- readRDS('D.rds')
+
+t0 <- Sys.time()
+res <- sHDL::sHDL(D, gwas.df, LD.path, nthreads=4, stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL)
+print(Sys.time() - t0)
+```
+
+sHDL will finish in **~3 mins** with 4 CPU cores.
+
+Down below message in the console during the analysis (birth weight from `HDL`) :
+
+```bash
+Formating GWAS summary statistics ...
+
+307519 out of 307519 (100%) SNPs in reference panel are available in the GWAS.  
+Converting z (D) to zr (Dr) ...
+
+Applied `minmax` weight nomalization on 147849 (48.078%) annotated variants.
+The theoretical upper boundary for enrichment fold is 2.080.
+Optimizing ...
+
+Optimization done in 63.731 seconds.
+
+time    63.7308533191681
+fold    1.27398058787877
+h2      0.16391651163241
+intercept       0.963235890727237
+fold.se 0.0259721362117597
+h2.se   0.00545604327753226
+intercept.se    0.0106589577723641
+fold.p  5.13295973147164e-26
+h2.p    2.68604947190569e-198
+intercept.p     0
+stepwise        TRUE
+converged       TRUE
+optim.message   CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
+Time difference of 2.521161 mins
+```
+
+
+
+## Results of sHDL
+
+```R
+str(res)
+# List of 13
+#  $ time         : num 97.4
+#  $ fold         : num 2.13
+#  $ h2           : num 0.0746
+#  $ intercept    : num 1.66
+#  $ fold.se      : num 0.0113
+#  $ h2.se        : num 0.00149
+#  $ intercept.se : num 0.0204
+#  $ fold.p       : num 0
+#  $ h2.p         : num 0
+#  $ intercept.p  : num 0
+#  $ stepwise     : logi TRUE
+#  $ converged    : logi TRUE
+#  $ optim.message: chr "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+```
+
+* time: Optimization time for sHDL, **NOT** including the time for converting z (D) to zr (Dr).
+* fold: Estimation for heritability enrichment fold.
+* h2: Estimation for heritability.
+* intercept: Estimation for intercept.
+* fold.se: Standard error of estimation for heritability enrichment fold.
+* h2.se: Standard error of estimation for heritability.
+* intercept.se: Standard error of estimation for intercept.se.
+* fold.p: P-value of estimation for heritability enrichment fold.
+* h2.p: P-value of estimation for heritability.
+* stepwise: Input `stepwise` parameter.
+* converged: Whether the optimization converges or not.
+* optim.message: The optimization message returned by `optim` function in `R`.
+

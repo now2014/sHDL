@@ -1,0 +1,22 @@
+template:
+  bootstrap: 5
+destination: docs
+
+url: https://now2014.github.io/sHDL
+
+repo:
+  branch: main
+
+navbar:
+  structure:
+    left:  [reference, tutorial]
+  components:
+    tutorial:
+      text: Tutorials
+      menu:
+      - text: Example of sHDL
+        href: articles/Example.html
+      - text: Mismatched LD reference panel
+        href: articles/Rebuild.html
+      - text: Genomic annotations
+        href: articles/Annotation.html
