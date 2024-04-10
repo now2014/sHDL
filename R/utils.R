@@ -263,11 +263,13 @@ normD <-function(
     }
     D <- Md / sum(D) * D
   }else if(method=="none"){
-    if(minv < 0) warn.msg <- "The annotation weights contain negative values, which may cause bias in the estimation.\n"
-    if(log.file != "" && !is.null(warn.msg)){
-      cat(warn.msg, file = log.file, append = T)
-    }else if(!is.null(warn.msg)){
-      warning(warn.msg)
+    if (minv < 0){
+      warn.msg <- "The annotation weights contain negative values, which may cause bias in the estimation.\n"
+      if (log.file != "") {
+        cat(warn.msg, file = log.file, append = T)
+      }else {
+        warning(warn.msg)
+      }
     }
     Md <- sum(D != 0)
     msg <- sprintf("No normalization applied on %d (%.3f%%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = %.3f.\n",
