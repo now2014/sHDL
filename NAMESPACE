@@ -2,6 +2,7 @@
 
 export(sHDL)
 export(sHDL.optim)
+export(sHDL.rebuild.ref)
 export(sHDL.reduct.dim)
 importFrom(RhpcBLASctl,blas_set_num_threads)
 importFrom(RhpcBLASctl,omp_set_num_threads)

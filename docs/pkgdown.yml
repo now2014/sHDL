@@ -2,6 +2,8 @@ pandoc: 3.1.13
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
+  Annotation: Annotation.html
   Example: Example.html
-last_built: 2024-04-09T14:20Z
+  Rebuild: Rebuild.html
+last_built: 2024-04-10T04:18Z
 

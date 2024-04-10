@@ -51,6 +51,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-tutorials">Tutorials</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-tutorials">
     <a class="dropdown-item" href="articles/Example.html">Example of sHDL</a>
+    <a class="dropdown-item" href="articles/Rebuild.html">Mismatched LD reference panel</a>
+    <a class="dropdown-item" href="articles/Annotation.html">Genomic annotations</a>
   </div>
 </li>
       </ul>
@@ -76,29 +78,38 @@
 </div>
 <p><br></p>
 <div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>To install the latest version of <code>sHDL</code> package via Github, run the following commands in <code>R</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install required packages</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RhpcBLASctl"</span>, <span class="st">"dplyr"</span>, <span class="st">"parallel"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"now2024/sHDL"</span><span class="op">)</span></span></code></pre></div>
+<p>In practice, the density of GWAS SNPs often poses a challenge to ensuring the positive definiteness of the covariance matrix <span class="math inline"><strong>Σ</strong></span> for the GWAS Z-score vector <span class="math inline"><strong>z</strong></span>. This presents a significant obstacle when conducting statistical modeling, as a positive definite <span class="math inline"><strong>Σ</strong></span> is <strong>essential</strong>. Moreover, the high density of SNPs results in a high-dimensional problem.</p>
+<p>The stratified high-definition likelihood (sHDL) extends the full-likelihood framework of the high-definition likelihood (HDL) method (Ning et al. 2020), addressing this issue by transforming <span class="math inline"><strong>Σ</strong></span> into a <strong>reduced, positive definite</strong> covariance matrix <span class="math inline"><strong>Σ</strong><sub><em>r</em></sub></span>. Paired with Cholesky decomposition, the sHDL method proves to be highly efficient in heritability enrichment analysis.</p>
 </div>
 <div class="section level2">
-<h2 id="required-input-data">Required input data<a class="anchor" aria-label="anchor" href="#required-input-data"></a>
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<ul>
-<li><p><code>D</code>, is a vector of genomic annotations with vector names of SNP IDs.</p></li>
-<li><p><code>gwas.df</code>, is a GWAS summary statistics of genetic variants for a specific trait. For description of the format of summary statistics, please refer to <a href="https://github.com/zhenin/HDL/wiki/Format-of-summary-statistics" class="external-link">this wiki page from HDL</a>.</p></li>
-<li><p>The eigenvalues and eigenvectors of LD matrices from <code>HDL</code>, refer to the <a href="https://github.com/zhenin/HDL/wiki/Reference-panels" class="external-link">instruction</a> in the <a href="https://github.com/zhenin/HDL/wiki" class="external-link">HDL wiki</a>.</p></li>
-</ul>
+<p>Install dependent <code>R</code> packages:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RhpcBLASctl"</span>, <span class="st">"dplyr"</span>, <span class="st">"parallel"</span>, <span class="st">"remotes"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>To install the latest version of <code>sHDL</code> package via Github, run the following commands in <code>R</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"now2024/sHDL"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="quick-vignette">Quick vignette<a class="anchor" aria-label="anchor" href="#quick-vignette"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Download the LD reference panel from the <a href="https://github.com/zhenin/HDL" class="external-link">HDL</a> software:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-c</span> <span class="at">-t</span> 1 <span class="dt">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  https://www.dropbox.com/s/fuvpwsf6r8tjd6c/UKB_array_SVD_eigen90_extraction.tar.gz<span class="pp">?</span>dl=0 <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">--no-check-certificate</span> <span class="at">-O</span> /path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># checking the md5 = ff3fadd7ea08bd29759b6c652618cd1f</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">md5sum</span> /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"># extraction</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="fu">tar</span> <span class="at">-xvf</span> /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span></code></pre></div>
+<p>Run sHDL</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"zhenin/HDL/HDL"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">"HDL"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">sHDL</span><span class="op">)</span></span>
 <span></span>
@@ -109,28 +120,19 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">gwas1.example</span><span class="op">$</span><span class="va">SNP</span></span>
 <span></span>
 <span><span class="co">## The path to the directory where linkage disequilibrium (LD) information is stored.</span></span>
-<span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">"path/to/UKB_array_SVD_eigen90_extraction"</span></span>
+<span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">"/your/path/to/UKB_array_SVD_eigen90_extraction"</span></span>
 <span></span>
 <span><span class="co">## To speed up the test, we set a large lam.cut value.</span></span>
-<span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sHDL.html">sHDL</a></span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">1</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">10</span>, Dr.path<span class="op">=</span><span class="st">"./Dr"</span>, verbose<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res.sHDL</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="st">"rm -rf ./Dr"</span><span class="op">)</span> <span class="co"># remove the Dr directory</span></span></code></pre></div>
-<p>For more detailed help in <code>R</code></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">?</span><span class="va">sHDL</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="more-detailed-tutorial">More detailed tutorial<a class="anchor" aria-label="anchor" href="#more-detailed-tutorial"></a>
-</h2>
-<p>For more detailed tutorial please go to <a href="https://now2014.github.io/sHDL/articles/Example.html" class="external-link">this example</a>.</p>
+<span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sHDL.html">sHDL</a></span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">10</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, mode<span class="op">=</span><span class="st">"memory"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res.sHDL</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>For more detail</strong> please go to <a href="https://now2014.github.io/sHDL/" class="external-link">https://now2014.github.io/sHDL/</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use the <code>sHDL</code> software, please cite:</p>
-<p><a href="https://www.nature.com/articles/s41588-020-0653-y" class="external-link">Ning, Z., Pawitan, Y. &amp; Shen, X. High-definition likelihood inference of genetic correlations across human complex traits. <em>Nat Genet</em> (2020)</a>.</p>
 <p>Lan A. and Shen X. Modeling the genetic architecture of complex traits via stratified high-definition likelihood. (2024).</p>
+<p><a href="https://www.nature.com/articles/s41588-020-0653-y" class="external-link">Ning, Z., Pawitan, Y. &amp; Shen, X. High-definition likelihood inference of genetic correlations across human complex traits. <em>Nat Genet</em> (2020)</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="contact">Contact<a class="anchor" aria-label="anchor" href="#contact"></a>
@@ -162,7 +164,8 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Ao Lan <br><small class="roles"> Maintainer </small>  </li>
+<li>Ao Lan <br><small class="roles"> Author, maintainer </small>  </li>
+<li>Xia Shen <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
 
@@ -174,7 +177,7 @@
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Ao Lan.</p>
+<p>Developed by Ao Lan, Xia Shen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

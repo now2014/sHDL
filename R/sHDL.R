@@ -7,8 +7,8 @@
 #' @param LD.path Path to the directory where linkage disequilibrium (LD) information is stored, compatible with HDL LD reference panels.
 #' @param output.file Where the log and results should be written. If you do not specify a file, the log will be printed on the console.
 #' @param nthreads Number of threads to use, default \code{nthreads = 1}.
-#' @param stepwise Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not NULL, stepwise will be overridden.
-#' @param fill.missing.N If the sample size is missing in the GWAS summary statistics, fill.missing.N is used to fill the missing values.
+#' @param stepwise Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.
+#' @param fill.missing.N If the sample size is missing in the GWAS summary statistics, \code{fill.missing.N} is used to fill the missing values.
 #' @param lim Tolerance limitation to ensure the positive-definiteness of covariance matrices, default \code{lim = exp(-18)}.
 #' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff.
 #' @param Dr.path Path to the directory where the Dr matrices are stored, default \code{Dr.path = "./Dr"}.
@@ -21,7 +21,7 @@
 #' @param start.v A vector of starting values \code{c(fold, h2, intercept)} for optimization.
 #' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
-#' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector D is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector D is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector D is not normalized.
+#' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.
 #' @note Users can download the precomputed eigenvalues and eigenvectors of LD correlation matrices for European ancestry population. The download link can be found at https://github.com/zhenin/HDL/wiki/Reference-panels
 #' These are the LD matrices and their eigen-decomposition from 335,265 genomic British UK Biobank individuals. Three sets of reference panel are provided:
 #' 1) 1,029,876 QCed UK Biobank imputed HapMap3 SNPs. The size is about 33 GB after unzipping. Although it takes more time, using the imputed panel provides more accurate estimates of genetic correlations.
@@ -69,9 +69,8 @@
 #' LD.path <- "path/to/UKB_array_SVD_eigen90_extraction"
 #' 
 #' ## To speed up the test, we set a large lam.cut value.
-#' res.sHDL <- sHDL(D, gwas1.example, LD.path, nthreads=1, stepwise=TRUE, lam.cut=10, Dr.path="./Dr", verbose=F)
-#' as.data.frame(res.sHDL)
-#' system("rm -rf ./Dr") # remove the Dr directory
+#' res.sHDL <- sHDL(D, gwas1.example, LD.path, nthreads=4, stepwise=TRUE, lam.cut=10, Dr.path=NULL, mode="memory")
+#' print(as.data.frame(res.sHDL))
 #' }
 #' @export
 #'

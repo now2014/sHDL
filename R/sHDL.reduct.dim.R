@@ -1,15 +1,15 @@
 #' Reduce the dimension of covariance matrix by converting z (D) to zr (Dr).
 #'
-#' @param LD.file Path to the \code{.rda} file where the Eigen decomposition of LD matrix is stored.
+#' @param LD.path Path to the \code{.rda} file where the Eigen decomposition of LD matrix is stored.
 #' @param D A vector of genomic annotations with vector names of SNP IDs.
-#' @param z A matrix of Z-scores with rownames of SNP IDs. Supporting multiple columns for multiple traits.
-#' @param lam.cut Eigenvalue cutoff for LD matrices, default lam.cut = NULL, which means no cutoff.
+#' @param z A matrix of Z-scores with rownames of SNP IDs. \bold{Supporting multiple columns for multiple traits.}
+#' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff.
 #' @param Dr.path Path to the directory where the Dr matrices are stored, default Dr.path = NULL, which means do not store Dr to disk.
 #' @param overwrite Whether to overwrite the existing Dr matrices, default overwrite = FALSE.
 #' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
 #' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}.
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
-#' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector D is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector D is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector D is not normalized.
+#' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.
 #' @return A list is returned with:
 #' \itemize{
 #' \item{Dr }{The reduct RDR matrix.}

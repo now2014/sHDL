@@ -49,6 +49,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-tutorials">Tutorials</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-tutorials">
     <a class="dropdown-item" href="../articles/Example.html">Example of sHDL</a>
+    <a class="dropdown-item" href="../articles/Rebuild.html">Mismatched LD reference panel</a>
+    <a class="dropdown-item" href="../articles/Annotation.html">Genomic annotations</a>
   </div>
 </li>
       </ul>
@@ -74,7 +76,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Example of sHDL</h1>
             
-            <h4 data-toc-skip class="date">2024-04-09</h4>
+            <h4 data-toc-skip class="date">2024-04-10</h4>
       
       
       <div class="d-none name"><code>Example.Rmd</code></div>
@@ -279,7 +281,7 @@ and set the weights of missing variants in the LD reference panel to
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">::</span><span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas.df</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, mode<span class="op">=</span><span class="st">'memory'</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">t0</span><span class="op">)</span></span></code></pre></div>
 <p>sHDL will finish in <strong>~3 mins</strong> with 4 CPU cores.</p>
-<p>Down below is the screen message during the analysis (birth weight
+<p>Down below message in the console during the analysis (birth weight
 from <code>HDL</code>) :</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="ex">Formating</span> GWAS summary statistics ...</span>
 <span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
@@ -352,7 +354,7 @@ fold.</li>
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Ao Lan.</p>
+<p>Developed by Ao Lan, Xia Shen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

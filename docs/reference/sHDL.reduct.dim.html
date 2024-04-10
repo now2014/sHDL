@@ -25,6 +25,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-tutorials">Tutorials</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-tutorials">
     <a class="dropdown-item" href="../articles/Example.html">Example of sHDL</a>
+    <a class="dropdown-item" href="../articles/Rebuild.html">Mismatched LD reference panel</a>
+    <a class="dropdown-item" href="../articles/Annotation.html">Genomic annotations</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -67,8 +69,12 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>z</dt>
-<dd><p>A matrix of Z-scores with rownames of SNP IDs. Supporting multiple columns for multiple traits.</p></dd>
+    <dl><dt>LD.path</dt>
+<dd><p>Path to the <code>.rda</code> file where the Eigen decomposition of LD matrix is stored.</p></dd>
+
+
+<dt>z</dt>
+<dd><p>A matrix of Z-scores with rownames of SNP IDs. <b>Supporting multiple columns for multiple traits.</b></p></dd>
 
 
 <dt>D</dt>
@@ -76,7 +82,7 @@
 
 
 <dt>lam.cut</dt>
-<dd><p>Eigenvalue cutoff for LD matrices, default lam.cut = NULL, which means no cutoff.</p></dd>
+<dd><p>Eigenvalue cutoff for LD matrices, default <code>lam.cut = NULL</code>, which means no cutoff.</p></dd>
 
 
 <dt>Dr.path</dt>
@@ -100,11 +106,7 @@
 
 
 <dt>norm.method</dt>
-<dd><p>The normalization method, either <code>"minmax"</code> (default), <code>"scaled"</code> or <code>"none"</code>. If <code>"minmax"</code>, the annotation weight vector D is normalized to [0, 1]. If <code>"scaled"</code>, the sum of normalized vector D is scaled to the number of annotated SNPs. If <code>"none"</code>, the annotation weight vector D is not normalized.</p></dd>
-
-
-<dt>LD.file</dt>
-<dd><p>Path to the <code>.rda</code> file where the Eigen decomposition of LD matrix is stored.</p></dd>
+<dd><p>The normalization method, either <code>"minmax"</code> (default), <code>"scaled"</code> or <code>"none"</code>. If <code>"minmax"</code>, the annotation weight vector <code>D</code> is normalized to [0, 1]. If <code>"scaled"</code>, the sum of normalized vector <code>D</code> is scaled to the number of annotated SNPs. If <code>"none"</code>, the annotation weight vector <code>D</code> is not normalized.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -123,7 +125,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Ao Lan.</p>
+  <p></p><p>Developed by Ao Lan, Xia Shen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

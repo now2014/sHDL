@@ -18,11 +18,13 @@ sHDL.reduct.dim(
 )
 }
 \arguments{
-\item{z}{A matrix of Z-scores with rownames of SNP IDs. Supporting multiple columns for multiple traits.}
+\item{LD.path}{Path to the \code{.rda} file where the Eigen decomposition of LD matrix is stored.}
+
+\item{z}{A matrix of Z-scores with rownames of SNP IDs. \bold{Supporting multiple columns for multiple traits.}}
 
 \item{D}{A vector of genomic annotations with vector names of SNP IDs.}
 
-\item{lam.cut}{Eigenvalue cutoff for LD matrices, default lam.cut = NULL, which means no cutoff.}
+\item{lam.cut}{Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff.}
 
 \item{Dr.path}{Path to the directory where the Dr matrices are stored, default Dr.path = NULL, which means do not store Dr to disk.}
 
@@ -34,9 +36,7 @@ sHDL.reduct.dim(
 
 \item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
 
-\item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector D is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector D is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector D is not normalized.}
-
-\item{LD.file}{Path to the \code{.rda} file where the Eigen decomposition of LD matrix is stored.}
+\item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.}
 }
 \value{
 A list is returned with:

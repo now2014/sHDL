@@ -33,7 +33,7 @@ sHDL.optim(
 
 \item{log.file}{Where the log should be written.}
 
-\item{stepwise}{Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not NULL, stepwise will be overridden.}
+\item{stepwise}{Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.}
 
 \item{fix.h2}{Whether to fix the heritability to \code{fix.h2} or estimate the heritability, default \code{fix.h2 = NULL}, which means estimate the heritability.}
 

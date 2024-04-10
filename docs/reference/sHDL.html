@@ -25,6 +25,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-tutorials">Tutorials</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-tutorials">
     <a class="dropdown-item" href="../articles/Example.html">Example of sHDL</a>
+    <a class="dropdown-item" href="../articles/Rebuild.html">Mismatched LD reference panel</a>
+    <a class="dropdown-item" href="../articles/Annotation.html">Genomic annotations</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -100,11 +102,11 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 
 <dt>stepwise</dt>
-<dd><p>Whether to estimate enrichment fold by estimating heritability and intercept first, default <code>stepwise = FALSE</code>. If <code>fix.h2</code> and <code>fix.intercept</code> are not NULL, stepwise will be overridden.</p></dd>
+<dd><p>Whether to estimate enrichment fold by estimating heritability and intercept first, default <code>stepwise = FALSE</code>. If <code>fix.h2</code> and <code>fix.intercept</code> are not <code>NULL</code>, <code>stepwise</code> will be overridden.</p></dd>
 
 
 <dt>fill.missing.N</dt>
-<dd><p>If the sample size is missing in the GWAS summary statistics, fill.missing.N is used to fill the missing values.</p></dd>
+<dd><p>If the sample size is missing in the GWAS summary statistics, <code>fill.missing.N</code> is used to fill the missing values.</p></dd>
 
 
 <dt>lim</dt>
@@ -156,7 +158,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 
 <dt>norm.method</dt>
-<dd><p>The normalization method, either <code>"minmax"</code> (default), <code>"scaled"</code> or <code>"none"</code>. If <code>"minmax"</code>, the annotation weight vector D is normalized to [0, 1]. If <code>"scaled"</code>, the sum of normalized vector D is scaled to the number of annotated SNPs. If <code>"none"</code>, the annotation weight vector D is not normalized.</p></dd>
+<dd><p>The normalization method, either <code>"minmax"</code> (default), <code>"scaled"</code> or <code>"none"</code>. If <code>"minmax"</code>, the annotation weight vector <code>D</code> is normalized to [0, 1]. If <code>"scaled"</code>, the sum of normalized vector <code>D</code> is scaled to the number of annotated SNPs. If <code>"none"</code>, the annotation weight vector <code>D</code> is not normalized.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -210,9 +212,8 @@ then this HapMap2 panel is more proper to be used for HDL.
 <span class="r-in"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">"path/to/UKB_array_SVD_eigen90_extraction"</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## To speed up the test, we set a large lam.cut value.</span></span></span>
-<span class="r-in"><span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">1</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">10</span>, Dr.path<span class="op">=</span><span class="st">"./Dr"</span>, verbose<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res.sHDL</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/system.html" class="external-link">system</a></span><span class="op">(</span><span class="st">"rm -rf ./Dr"</span><span class="op">)</span> <span class="co"># remove the Dr directory</span></span></span>
+<span class="r-in"><span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">10</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, mode<span class="op">=</span><span class="st">"memory"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res.sHDL</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
@@ -221,7 +222,7 @@ then this HapMap2 panel is more proper to be used for HDL.
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Ao Lan.</p>
+  <p></p><p>Developed by Ao Lan, Xia Shen.</p>
 </div>
 
 <div class="pkgdown-footer-right">
