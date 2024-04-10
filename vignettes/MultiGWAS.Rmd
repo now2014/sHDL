@@ -1,0 +1,167 @@
+---
+title: "Run sHDL across a large number of traits"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Run sHDL across a large number of traits}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+In order to fulfill the demands of conducting heritability enrichment analysis across a large number of traits across various genomic annotations, we offer a function `sHDL.reduct.dim` within the `sHDL` package. This function speed up the analysis by pre-processing the GWAS summary statistics and annotations.
+
+Here are the workflow of the process:
+
+## Step 01. Convert GWAS summary statistics to $\mathbf{z}_r$
+
+```R
+#!/usr/bin/env Rscript
+library(sHDL)
+
+## function to read GWAS Z-scores and sample size N from GWAS summary statistics ##
+readZ <- function(gwas.file, LD.path, all.snps){
+  cat('Reading', gwas.file, '\n')
+  gwas.df <- data.table::fread(gwas.file, header=TRUE)
+  gwas.df <- sHDL:::format.gwas(gwas.df, LD.path)
+  Z <- rep(0, length(all.snps))
+  names(Z) <- all.snps
+  Z[gwas.df$SNP] <- gwas.df$Z
+  Z <- unname(Z)
+  N <- median(gwas.df$N, na.rm=TRUE)
+  return(c(N, Z))
+}
+
+
+## extract all snps in the LD reference panel ##
+LD.path <- '/path/to/UKB_array_SVD_eigen90_extraction'
+all.snps <- do.call(rbind, lapply(
+  sHDL:::list.LD.ref.files(LD.path, suffix='.bim'), data.table::fread, header=FALSE, select=2
+))
+all.snps <- unname(unlist(all.snps))
+
+## combine all GWAS Z-scores into a large matrix matZ ##
+gwas.dir <- '/path/to/all/gwas/summary/statistics'
+gwas.files <- list.files(gwas.dir, pattern='*.gz', full.names=TRUE, recursive=FALSE)
+phes <- gsub('\\.gz', '', basename(gwas.files)) # extract phenotype name
+phe2N <- rep(0, length(phes))
+matZ <- matrix(0, ncol=length(phes), nrow=length(all.snps))
+colnames(matZ) <- phes
+rownames(matZ) <- all.snps
+
+for(i in seq_along(gwas.files)){
+  zz <- readZ(gwas.files[i], LD.path, all.snps)
+  phe2N[i] <- zz[1]
+  matZ[, i] <- zz[-1]
+}
+
+## Convert matZ to zr ##
+lam.cut <- 1
+nthreads <- 8
+ref.data <- sHDL.reduct.dim(
+  LD.path, z=Z, D=NULL, lam.cut=lam.cut, Dr.path=NULL,
+  overwrite=FALSE, mode='memory', nthreads=nthreads
+)
+zr <- lapply(ref.data, function(x) x$zr)
+rs <- unlist(lapply(zr, function(x) nrow(x)))
+
+## convert zr to list by phes
+zr <- do.call(rbind, zr)
+zr <- lapply(1:ncol(zr), function(i, rs=NULL, phes=NULL){
+    zz <- zr[, i]
+    e <- cumsum(rs)
+    s <- c(1, e[-length(e)]+1)
+    zz <- sapply(1:length(s), function(j) zz[s[j]:e[j]])
+    return(zz)
+  }, rs=rs, phes=colnames(Z)
+)
+names(zr) <- colnames(Z)
+save(zr, phe2N, file='zr-phe2N.rda')
+```
+
+## Step 02. Convert genomic annotations to $\mathbf{D}_r$
+
+```R
+#!/usr/bin/env Rscript
+
+read.annot <- function(annot.name){
+  ## write this function to return the D vector of given annot.name
+}
+
+library(sHDL)
+
+overwrite <- FALSE
+nthreads <- 4
+lam.cut <- 1
+out.dir <- 'Dr-lam-1'
+LD.path <- '/path/to/UKB_imputed_SVD_eigen99_extraction'
+annot.names <- c('all', 'your', 'annot', 'names')
+
+for(annot.name in annot.names){
+  Dr.path <- paste0(out.dir, '/', annot.name)
+  D <- read.annot(annot.name)
+  ref.data <- sHDL.reduct.dim(
+    LD.path, z=NULL, D=D, lam.cut=lam.cut, Dr.path=Dr.path,
+    overwrite=FALSE, mode='disk', nthreads=nthreads
+  )
+}
+```
+
+## Step 03. Run sHDL in parallel
+
+```R
+#!/usr/bin/env Rscript
+library(sHDL)
+library(parallel)
+
+run.sHDL <- function(phe, ref.data, phe2N, zr, tsv.dir,
+  overwrite=FALSE){
+  tsv.file <- paste0(tsv.dir, '/', phe, '.tsv')
+  log.file <- paste0(tsv.dir, '/', phe, '.log')
+  if(file.exists(tsv.file) && !overwrite) return(NULL)
+  # add zr to ref.data
+  for(i in seq_along(ref.data)){
+    ref.data[[i]]$zr <- zr[[phe]][[i]]
+  }
+  start.v <- c(1, 0.1, 1)
+  res <- sHDL::sHDL.optim(ref.data, phe2N[phe], start.v=start.v,
+    output.file=tsv.file, log.file=log.file, stepwise = TRUE, verbose=TRUE
+  )
+  return(res)
+}
+
+load.Drs <- function(Dr.path){
+  Drs <- lapply(sHDL:::list.LD.ref.files(Dr.path), function(i){
+    load(i)
+    return(list(Dr=Dr, lam=lam, Md=Md, M=M))
+  })
+  return(Drs)
+}
+
+overwrite <- FALSE
+nthreads <- 10
+lam.cut <- 1
+out.dir <- 'res-sHDL'
+Dr.dir <- 'Dr-lam-1'
+
+annot.names <- c('all', 'your', 'annot', 'names')
+load('zr-phe2N.rda') # zr, phe2N
+phes <- names(zr)
+
+
+for(annot.name in annot.names){
+  Dr.path <- paste0(Dr.dir, '/', annot.name)
+  tsv.dir <- paste0(out.dir, '/', annot.name)
+  ref.data <- load.Drs(Dr.path)
+  if(!dir.exists(tsv.dir)) dir.create(tsv.dir, recursive=TRUE)
+
+  cat('annotation:', annot.name, '\n')  
+  tmp <- mclapply(phes, run.sHDL, zr=zr, phe2N=phe2N, ref.data=ref.data,
+    tsv.dir=tsv.dir, overwrite=overwrite, mc.cores=nthreads)
+}
+
+```
+

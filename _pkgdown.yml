@@ -20,4 +20,5 @@ navbar:
         href: articles/Annotation.html
       - text: Mismatched LD reference panel
         href: articles/Rebuild.html
-
+      - text: Run sHDL across a large number of traits
+        href: articles/MultiGWAS.html
