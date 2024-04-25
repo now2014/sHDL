@@ -273,7 +273,7 @@ normD <-function(
     }
     Md <- sum(D != 0)
     msg <- sprintf("No normalization applied on %d (%.3f%%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = %.3f.\n",
-      Md, Md/M, M/sum(D))
+      Md, Md/M, M/sum(D)*100)
     if(log.file != ""){
       cat(msg, file = log.file, append = T)
     }else{
@@ -286,7 +286,7 @@ normD <-function(
 
   msg <- sprintf("Applied `%s` weight nomalization on %d (%.3f%%) annotated variants.\n",
     method, Md, Md/M*100)
-  msg <- sprintf("%sThe theoretical upper boundary for enrichment fold is M / Md = %.3f", msg, M/sum(D))
+  msg <- sprintf("%sThe theoretical upper boundary for enrichment fold is M / Md = %.3f", msg, M/sum(D)*100)
   if(sum(D)/M > 0.9 && method == "scaled"){
     warn.msg <- paste0(msg, ", which is very close to 1, please consider the `minmax` option or reducing the dense of annotations.\n")
     msg <- NULL
