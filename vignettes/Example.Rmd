@@ -19,7 +19,7 @@ To install the latest version of `sHDL` package via Github, run the following co
 ```R
 # install required packages
 install.packages(c("RhpcBLASctl", "dplyr", "parallel"))
-remotes::install_github("now2024/sHDL")
+remotes::install_github("now2014/sHDL")
 ```
 
 The `data.table` package is also required for this example:

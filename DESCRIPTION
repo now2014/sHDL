@@ -8,7 +8,7 @@ Authors@R: c(person("Ao","Lan",role=c("aut", "cre"),email="lanao15@126.com"),
 Description: The functions return estimation and standard error of heritability and heritability enrichment fold of given trait based on GWAS summary statistics.
 URL: https://github.com/now2014/sHDL, https://now2014.github.io/sHDL
 License: GPL (>= 3)
-Imports: dplyr, parallel
+Imports: dplyr, parallel, RhpcBLASctl
 Depends: R (>= 3.1.1)
 Encoding: UTF-8
 RoxygenNote: 7.2.3

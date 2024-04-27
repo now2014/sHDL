@@ -19,7 +19,7 @@ install.packages(c("RhpcBLASctl", "dplyr", "parallel", "remotes"))
 To install the latest version of `sHDL` package via Github, run the following commands in `R`:
 
 ```R
-remotes::install_github("now2024/sHDL")
+remotes::install_github("now2014/sHDL")
 ```
 
 ## Quick vignette

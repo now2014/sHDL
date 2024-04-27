@@ -28,7 +28,7 @@ By default, `sHDL` (or `HDL`) fills GWAS z-scores with zeros when SNPs in the LD
 
 To address this issue, we provide a function to rebuild the LD reference panel by removing missed SNPs.
 
-**Warning**:
+**Caution**:
 
 * For GWAS summary statistics with **severe missingness**, the heritability may be severely underestimated and the efficiency might be lost.
 * This rebuilding process does not resolve the mismatch of **cross-ancestry** LD structures.
