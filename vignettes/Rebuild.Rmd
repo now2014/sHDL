@@ -19,7 +19,10 @@ A **matched** LD reference panel is vital for the analysis of GWAS summary stati
 When running `sHDL` (or `HDL`), you may encounter the following warning message:
 
 ```bash
-Warning: More than 1% SNPs in reference panel are missed ... This may generate bias in estimation. Please make sure that you are using correct reference panel.  
+Warning:
+More than 1% SNPs in reference panel are missed ...
+This may generate bias in estimation.
+Please make sure that you are using correct reference panel.  
 ```
 
 By default, `sHDL` (or `HDL`) fills GWAS z-scores with zeros when SNPs in the LD reference panel are missing.

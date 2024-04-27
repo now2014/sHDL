@@ -10,16 +10,11 @@ The stratified high-definition likelihood (sHDL) extends the full-likelihood fra
 
 ## Installation
 
-Install dependent `R` packages:
+To install the latest version of `sHDL` package via Github, run the following code in `R`:
 
 ```R
-install.packages(c("RhpcBLASctl", "dplyr", "parallel", "remotes"))
-```
-
-To install the latest version of `sHDL` package via Github, run the following commands in `R`:
-
-```R
-remotes::install_github("now2014/sHDL")
+# install.packages('remotes')
+remotes::install_github("now2014/sHDL"，ref='main')
 ```
 
 ## Quick vignette
@@ -59,6 +54,8 @@ LD.path <- "/your/path/to/UKB_array_SVD_eigen90_extraction"
 res.sHDL <- sHDL(D, gwas1.example, LD.path, nthreads=4, stepwise=TRUE, lam.cut=10, Dr.path=NULL, mode="memory")
 print(as.data.frame(res.sHDL))
 ```
+
+## More tutorials
 
 **For more detail** please visit [https://now2014.github.io/sHDL/](https://now2014.github.io/sHDL/).
 

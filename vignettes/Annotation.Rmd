@@ -318,7 +318,7 @@ One can also choose to keep the original annotation weights without normalizatio
 LD.path <- 'UKB_array_SVD_eigen90_extraction'
 D.none <- sHDL:::normD(snps.w, LD.path, norm.method='none')
 
-# No normalization applied on 121235 (0.394%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = 37.051.
+# No normalization applied on 121235 (39.424%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = 37.051.
 
 summary(D.none)
 #    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 

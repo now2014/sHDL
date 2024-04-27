@@ -14,12 +14,11 @@ knitr::opts_chunk$set(eval = FALSE)
 
 ## Installation
 
-To install the latest version of `sHDL` package via Github, run the following commands in `R`:
+To install the latest version of `sHDL` package via Github, run the following code in `R`:
 
 ```R
-# install required packages
-install.packages(c("RhpcBLASctl", "dplyr", "parallel"))
-remotes::install_github("now2014/sHDL")
+# install.packages('remotes')
+remotes::install_github("now2014/sHDL"，ref='main')
 ```
 
 The `data.table` package is also required for this example:

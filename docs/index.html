@@ -90,29 +90,26 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install dependent <code>R</code> packages:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RhpcBLASctl"</span>, <span class="st">"dplyr"</span>, <span class="st">"parallel"</span>, <span class="st">"remotes"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>To install the latest version of <code>sHDL</code> package via Github, run the following commands in <code>R</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"now2014/sHDL"</span><span class="op">)</span></span></code></pre></div>
+<p>To install the latest version of <code>sHDL</code> package via Github, run the following code in <code>R</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># install.packages('remotes')</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"now2014/sHDL"</span>，<span class="at">ref=</span><span class="st">'main'</span>)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="quick-vignette">Quick vignette<a class="anchor" aria-label="anchor" href="#quick-vignette"></a>
 </h2>
 <p>Download the LD reference panel from the <a href="https://github.com/zhenin/HDL" class="external-link">HDL</a> software:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-c</span> <span class="at">-t</span> 1 <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  https://www.dropbox.com/s/fuvpwsf6r8tjd6c/UKB_array_SVD_eigen90_extraction.tar.gz<span class="pp">?</span>dl=0 <span class="dt">\</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">--no-check-certificate</span> <span class="at">-O</span> /path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># checking the md5 = ff3fadd7ea08bd29759b6c652618cd1f</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">md5sum</span> /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"># extraction</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="fu">tar</span> <span class="at">-xvf</span> /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-c</span> <span class="at">-t</span> 1 <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  https://www.dropbox.com/s/fuvpwsf6r8tjd6c/UKB_array_SVD_eigen90_extraction.tar.gz<span class="pp">?</span>dl=0 <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">--no-check-certificate</span> <span class="at">-O</span> /path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co"># checking the md5 = ff3fadd7ea08bd29759b6c652618cd1f</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">md5sum</span> /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co"># extraction</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="fu">tar</span> <span class="at">-xvf</span> /your/path/to/UKB_array_SVD_eigen90_extraction.tar.gz</span></code></pre></div>
 <p>Run sHDL</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"zhenin/HDL/HDL"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/remotes/man/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"zhenin/HDL/HDL"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">"HDL"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/now2014/sHDL" class="external-link">sHDL</a></span><span class="op">)</span></span>
@@ -129,6 +126,10 @@
 <span><span class="co">## To speed up the test, we set a large lam.cut value.</span></span>
 <span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sHDL.html">sHDL</a></span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">10</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, mode<span class="op">=</span><span class="st">"memory"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res.sHDL</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="more-tutorials">More tutorials<a class="anchor" aria-label="anchor" href="#more-tutorials"></a>
+</h2>
 <p><strong>For more detail</strong> please visit <a href="https://now2014.github.io/sHDL/">https://now2014.github.io/sHDL/</a>.</p>
 </div>
 <div class="section level2">
