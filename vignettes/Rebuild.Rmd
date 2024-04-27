@@ -65,7 +65,7 @@ This process may take a while, you can put the following code into a script and 
 
 ```R
 LD.path.new <- '/path/to/new/UKB_array_SVD_eigen90_extraction'
-sHDL.reduct.dim(LD.path, gwas.snps, LD.path.new, nthreads = 8) # run with 8 CPU cores
+sHDL.rebuild.ref(LD.path, gwas.snps, LD.path.new, nthreads = 8) # run with 8 CPU cores
 ```
 
 Down below message in the console during the process:
@@ -129,7 +129,7 @@ Updating chr22_1 in 8.26 seconds: 4352 (out of 5420) SNPs are kept.
   D <- rbinom(M, 1, 0.1) # random D vector
   names(D) <- gwas1.example$SNP
   
-  res.sHDL <- sHDL::sHDL(
+  res.sHDL <- sHDL(
     D, gwas1.example, LD.path.new, nthreads=4,
     stepwise=TRUE, lam.cut=1, Dr.path=NULL, mode="memory"
   )
