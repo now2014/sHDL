@@ -14,7 +14,7 @@ To install the latest version of `sHDL` package via Github, run the following co
 
 ```R
 # install.packages('remotes')
-remotes::install_github("now2014/sHDL"，ref='main')
+remotes::install_github("now2014/sHDL", ref='main')
 ```
 
 ## Quick vignette
