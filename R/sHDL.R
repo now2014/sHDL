@@ -19,6 +19,8 @@
 #' @param maxit Maximum number of iterations, default \code{maxit = 1000}.
 #' @param pgtol Tolerance for convergence, default \code{pgtol = 1e-3}.
 #' @param start.v A vector of starting values \code{c(fold, h2, intercept)} for optimization.
+#' @param lwr Lower bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(0, 0, 0.1)}.
+#' @param upr Upper bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(M / Md, 1, 5)}, where \code{Md} is the sum of annotation weights and \code{M} is the total number of SNPs.
 #' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
 #' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.
@@ -52,7 +54,7 @@
 #' @references
 #' Lan A and Shen X (2024). Modeling the Genetic Architecture of Complex Traits via Stratified High-Definition Likelihood.
 #'
-#' @importFrom dplyr filter
+#' @importFrom dplyr filter distinct
 #' @importFrom parallel makeCluster stopCluster clusterExport
 #' @importFrom RhpcBLASctl blas_set_num_threads omp_set_num_threads
 #'
@@ -77,10 +79,10 @@
 
 sHDL <-function(
   D, gwas.df, LD.path, output.file = NULL, nthreads = 1, stepwise = TRUE,
-  fill.missing.N = NULL, lim = exp(-18), lam.cut = NULL,
-  Dr.path = "./Dr", overwrite = FALSE, verbose = FALSE,
+  fill.missing.N = c("none", "min", "max", "median", "mean"),
+  lim = exp(-18), lam.cut = NULL, Dr.path = "./Dr", overwrite = FALSE, verbose = FALSE,
   fix.h2 = NULL, fix.intercept = NULL, maxit=1000,
-  pgtol=1e-3, start.v = c(1, 0.1, 1), mode=c("disk", "memory"),
+  pgtol=1e-3, start.v = c(1, 0.1, 1), lwr=NULL, upr=NULL, mode=c("disk", "memory"),
   pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", norm.method=c("minmax", "scaled", "none")){
 
   mode <- match.arg(mode)
@@ -97,26 +99,26 @@ sHDL <-function(
     clust <- NULL
   }
 
-  message("Formating GWAS summary statistics ...\n")
-  gwas.df <- format.gwas(gwas.df, LD.path, fill.missing.N, log.file, pattern)
+  sHDL:::log.msg("Starting sHDL analysis...\n", log.file)
+  gwas.df <- sHDL:::format.gwas(gwas.df, LD.path, fill.missing.N, log.file, pattern)
 
   N <- median(gwas.df$N, na.rm=TRUE)
   z <- gwas.df$Z
   z <- matrix(z, ncol=1)
   rownames(z) <- gwas.df$SNP
 
-  message("Converting z (D) to zr (Dr) ...\n")
+  sHDL:::log.msg("Normalizing D...\n", log.file)
   ref.data <- sHDL:::sHDL.reduct.dim(LD.path, z=z, D=D, lam.cut=lam.cut,
     Dr.path=Dr.path, overwrite=overwrite, mode=mode,
     nthreads=nthreads, pattern=pattern, norm.method=norm.method)
   M <- sum(unlist(lapply(ref.data, function(x) x$M)))
   Md <- sum(unlist(lapply(ref.data, function(x) x$Md)))
 
-  message("Optimizing ...\n")
+  sHDL:::log.msg("Starting optimization...\n", log.file)
   res <- sHDL.optim(
     ref.data, N, start.v, output.file, log.file,
     stepwise, fix.h2, fix.intercept, lim, verbose, clust,
-    lwr=NULL, upr=NULL, maxit=maxit, pgtol=pgtol
+    lwr=lwr, upr=upr, maxit=maxit, pgtol=pgtol
   )
   return(res)
 }

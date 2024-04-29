@@ -1,86 +1,87 @@
+#' @title log messages and errors
+#' @noRd
+#' @keywords internal
+log.msg <- function(message, log.file = "", type="message"){
+  if(is.null(message)) return(NULL)
+  if(log.file != ""){
+    cat(message, file = log.file, append = T)
+  }
+  if(type == "warning"){
+    warning(message)
+  }else if(type == "error"){
+    stop(message)
+  }else{
+    cat(message)
+  }
+}
+
 #' @title Format GWAS data
 #' @noRd
 #' @keywords internal
-format.gwas <- function(gwas.df, LD.path, fill.missing.N = NULL, log.file = "",
+format.gwas <- function(gwas.df, LD.path,
+  fill.missing.N = c("none", "min", "max", "median", "mean"), log.file = "",
   pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
-
+  fill.missing.N <- match.arg(fill.missing.N)
   bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim', pattern=pattern)
   bim <- do.call(rbind, lapply(
     bim.files, read.table, header=F,
     col.names=c('CHR', 'SNP', 'CM', 'POS', 'A1', 'A2')
   ))
   Mref <- nrow(bim)
-  
+
   gwas.df <- filter(gwas.df, SNP %in% bim$SNP)
 
   gwas.df$A1 <- toupper(as.character(gwas.df$A1))
   gwas.df$A2 <- toupper(as.character(gwas.df$A2))
 
-  if(!("Z" %in% colnames(gwas.df))){
-    if(("b" %in% colnames(gwas.df)) && ("se" %in% colnames(gwas.df))){
-      if(abs(median(gwas.df$b) - 1) < 0.1){
-        cat("Taking log(b) in GWAS 1 because b is likely to be OR in stead of log(OR). \n")
-        if(log.file != ""){
-          cat("Taking log(b) in GWAS 1 because b is likely to be OR in stead of log(OR). \n", file = log.file, append = T)
-        }
-        gwas.df$Z <- log(gwas.df$b) / gwas.df$se
-      } else{
-        gwas.df$Z <- gwas.df$b / gwas.df$se
-      }
+  Z.found <- "Z" %in% colnames(gwas.df)
+  b.found <- "b" %in% colnames(gwas.df)
+  se.found <- "se" %in% colnames(gwas.df)
+  if(!Z.found && !b.found && !se.found){
+    sHDL:::log.msg(
+      "Z is not available in GWAS, meanwhile either b or se is missing. Please check.",
+      log.file, type="error"
+    )
+  }
+  if(!Z.found && b.found && se.found){
+    if(abs(median(gwas.df$b) - 1) < 0.1){
+      sHDL:::log.msg(
+        "Taking log(b) in GWAS because b is likely to be OR in stead of log(OR). \n",
+        log.file, type="warning")
+      gwas.df$Z <- log(gwas.df$b) / gwas.df$se
     } else{
-      error.message <- "Z is not available in GWAS 1, meanwhile either b or se is missing. Please check."
-      if(log.file != ""){
-        cat(error.message, file = log.file, append = T)
-      }
-      stop(error.message)
-
-    }
-  }
-  gwas.df$Z[!is.finite(gwas.df$Z)] <- NA
-  k1.0 <- length(unique(gwas.df$SNP))
-
-  if(is.null(fill.missing.N)){
-    gwas.df <- filter(gwas.df, !is.na(Z), !is.na(N))
-
-  } else if(fill.missing.N == "min"){
-    gwas.df <- filter(gwas.df, !is.na(Z))
-    gwas.df$N[is.na(gwas.df$N)] <- min(gwas.df$N, na.rm = T)
-  } else if(fill.missing.N == "max"){
-    gwas.df <- filter(gwas.df, !is.na(Z))
-    gwas.df$N[is.na(gwas.df$N)] <- max(gwas.df$N, na.rm = T)
-  } else if(fill.missing.N == "median"){
-    gwas.df <- filter(gwas.df, !is.na(Z))
-    gwas.df$N[is.na(gwas.df$N)] <- median(gwas.df$N, na.rm = T)
-  } else{
-    error.message <- "If given, the argument fill.missing.N can only be one of below: 'min', 'max', 'median'."
-    if(log.file != ""){
-      cat(error.message, file = log.file, append = T)
-    }
-    stop(error.message)
-  }
-
-  k1 <- length(unique(gwas.df$SNP))
-  k1.percent <- paste("(",round(100*k1 / Mref, 2), "%)", sep="")
-
-  if(k1 < Mref*0.99){
-    warn.message <- "More than 1% SNPs in reference panel are missed in the GWAS. This may generate bias in estimation. Please make sure that you are using correct reference panel.  \n"
-    if(log.file != ""){
-      cat(warn.message, file = log.file, append = T)
-    }else{
-      warning(warn.message)
+      gwas.df$Z <- gwas.df$b / gwas.df$se
     }
   }
 
-  if(log.file != ""){
-    cat(k1, "out of", Mref, k1.percent, "SNPs in reference panel are available in the GWAS."," \n", file = log.file, append = T)
-  }else{
-    cat(k1, "out of", Mref, k1.percent, "SNPs in reference panel are available in the GWAS."," \n")
+  gwas.df <- filter(gwas.df, !is.na(Z), is.finite(Z))
+  gwas.df$N[is.na(gwas.df$N)] <- switch(
+    fill.missing.N,
+    "min" = min(gwas.df$N, na.rm = T),
+    "max" = max(gwas.df$N, na.rm = T),,
+    "median" = median(gwas.df$N, na.rm = T),,
+    "mean" = mean(gwas.df$N, na.rm = T),,
+    "none" = NA
+  )
+  gwas.df <- filter(gwas.df, !is.na(N))
+  gwas.M <- length(unique(gwas.df$SNP))
+  if(gwas.M < Mref*0.99){
+    sHDL:::log.msg(
+      "More than 1% SNPs in reference panel are missed in the GWAS. This may generate bias in estimation. Please make sure that you are using correct reference panel.  \n",
+      log.file, type="warning"
+    )
   }
-  N <- median(gwas.df$N, na.rm=TRUE)
+
+  sHDL:::log.msg(
+    sprintf(
+      "%d out of %d (%.2f%%) SNPs in reference panel are available in the GWAS.\n",
+      gwas.M, Mref, 100*gwas.M/Mref
+    ),
+    log.file, type="message"
+  )
 
   ## remove duplicates
-  dup.snps <- gwas.df$SNP[duplicated(gwas.df$SNP)]
-  gwas.df <- filter(gwas.df, !(SNP %in% dup.snps))
+  gwas.df <- distinct(gwas.df, SNP, .keep_all = TRUE)
 
   ## match direction of z-scores
   ref.A1 <- bim$A1
@@ -173,11 +174,6 @@ log.lik <- function(refd, h20, h2d, intercept,
   L <- tryCatch({
     chol(sigma)
   }, error = function(e){
-    # cat("Error in chol(sigma) \n")
-    # cat("min(alpha): ", min(alpha), "\n")
-    # cat("h20: ", h20, "\n")
-    # cat("h2d: ", h2d, "\n")
-    # cat("intercept: ", intercept, "\n")
     NULL
   })
   if(is.null(L)) return(-1e18)
@@ -187,7 +183,6 @@ log.lik <- function(refd, h20, h2d, intercept,
   logdet <- as.vector(logdet)
   quadra <- as.vector(quadra)
   lnL <- -0.5 * (logdet + quadra)
-  # cat(h20, h2d, logdet, quadra, lnL, '\n')
   return(lnL)
 }
 
@@ -216,10 +211,12 @@ log.lik.wg <- function(param, ref.data, Md, M, N,
 
   lnL <- sum(unlist(lnL))
   time <- as.numeric(Sys.time() - t0, units="secs")
-  if(verbose) cat(sprintf(
-    "fold: %.3f h2: %.3f intercept: %.3f lnL: %.3f time: %.3f \n",
-    fold, h2, intercept, lnL, time
-  ), file=log.file, append=T)
+  if(verbose) sHDL:::log.msg(
+    sprintf(
+      "fold: %.3f h2: %.3f intercept: %.3f lnL: %.3f time: %.3f \n",
+      fold, h2, intercept, lnL, time),
+    log.file, type="message"
+  )
   return(lnL)
 }
 
@@ -264,24 +261,21 @@ normD <-function(
     D <- Md / sum(D) * D
   }else if(method=="none"){
     if (minv < 0){
-      warn.msg <- "The annotation weights contain negative values, which may cause bias in the estimation.\n"
-      if (log.file != "") {
-        cat(warn.msg, file = log.file, append = T)
-      }else {
-        warning(warn.msg)
-      }
+      sHDL:::log.msg(
+        "The annotation weights contain negative values, which may cause bias in the estimation.\n",
+        log.file, type="warning"
+      )
     }
     Md <- sum(D != 0)
-    msg <- sprintf("No normalization applied on %d (%.3f%%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = %.3f.\n",
+    msg <- sprintf(
+      "No normalization applied on %d (%.3f%%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = %.3f.\n",
       Md, Md/M, M/sum(D)*100)
-    if(log.file != ""){
-      cat(msg, file = log.file, append = T)
-    }else{
-      cat(msg)
-    }
+    sHDL:::log.msg(msg, log.file, type="message")
     return(D)
   }else{
-    stop("Unknown normalization method.")
+    sHDL:::log.msg(
+      "Unknown normalization method. Please choose one of 'minmax', 'scaled', 'none'.\n",
+      log.file, type="error")
   }
 
   msg <- sprintf("Applied `%s` weight nomalization on %d (%.3f%%) annotated variants.\n",
@@ -297,13 +291,7 @@ normD <-function(
     msg <- paste0(msg, ".\n")
     warn.msg <- NULL
   }
-  
-  if(log.file != ""){
-    if(!is.null(msg)) cat(msg, file = log.file, append = T)
-    if(!is.null(warn.msg)) cat(warn.msg, file = log.file, append = T)
-  }else{
-    if(!is.null(msg)) cat(msg)
-    if(!is.null(warn.msg)) warning(warn.msg)
-  }
+  sHDL:::log.msg(msg, log.file, type="message")
+  sHDL:::log.msg(warn.msg, log.file, type="warning")
   return(D)
 }

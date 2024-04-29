@@ -11,7 +11,7 @@ sHDL(
   output.file = NULL,
   nthreads = 1,
   stepwise = TRUE,
-  fill.missing.N = NULL,
+  fill.missing.N = c("none", "min", "max", "median", "mean"),
   lim = exp(-18),
   lam.cut = NULL,
   Dr.path = "./Dr",
@@ -22,6 +22,8 @@ sHDL(
   maxit = 1000,
   pgtol = 0.001,
   start.v = c(1, 0.1, 1),
+  lwr = NULL,
+  upr = NULL,
   mode = c("disk", "memory"),
   pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*",
   norm.method = c("minmax", "scaled", "none")
@@ -63,6 +65,10 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 \item{pgtol}{Tolerance for convergence, default \code{pgtol = 1e-3}.}
 
 \item{start.v}{A vector of starting values \code{c(fold, h2, intercept)} for optimization.}
+
+\item{lwr}{Lower bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(0, 0, 0.1)}.}
+
+\item{upr}{Upper bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(M / Md, 1, 5)}, where \code{Md} is the sum of annotation weights and \code{M} is the total number of SNPs.}
 
 \item{mode}{Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.}
 

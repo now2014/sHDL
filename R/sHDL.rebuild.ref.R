@@ -21,7 +21,7 @@ sHDL.rebuild.ref <- function(LD.path, gwas.snps, LD.path.new, nthreads=1,
   LD.path.new <- normalizePath(LD.path.new, mustWork=FALSE)
   if(!dir.exists(LD.path.new)) dir.create(LD.path.new, recursive = TRUE)
   # clean the new directory
-  cat("Cleaning the new directory...\n")
+  sHDL:::log.msg("Cleaning the new directory...\n")
   files <- list.files(LD.path.new, full.names=TRUE)
   if(length(files) > 0) file.remove(files)
 
@@ -64,7 +64,7 @@ sHDL.rebuild.ref <- function(LD.path, gwas.snps, LD.path.new, nthreads=1,
     nsnps.list[[chrom]] <- c(nsnps.list[[chrom]], length(kept.snps))
     snps.name.list <- c(snps.name.list, kept.snps)
     tt <- as.numeric(difftime(Sys.time(), t0, units="secs"))
-    cat(sprintf(
+    sHDL:::log.msg(sprintf(
       "Updating chr%d_%d in %.2f seconds: %d (out of %d) SNPs are kept.\n",
       chrom, piece, tt, length(kept.snps), M
     ))

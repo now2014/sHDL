@@ -57,7 +57,7 @@ print(as.data.frame(res.sHDL))
 
 ## More tutorials
 
-**For more detail** please visit [https://now2014.github.io/sHDL/](https://now2014.github.io/sHDL/).
+**For more detail** please see tutorials in [https://now2014.github.io/sHDL/](https://now2014.github.io/sHDL/).
 
 ## Citation
 

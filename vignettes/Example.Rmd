@@ -135,8 +135,6 @@ Or you can prepare your data as follows:
   saveRDS(gwas.df, file='gwas.df.rds') # save the gwas.df for sHDL
   ```
 
-**Notice**: `sHDL` automatically aligns the `A1` allele between input GWAS summary statistics and LD reference panel, so **further data wrangling can be skipped**.
-
 ### Genomic annotation
 
 In this example, we will create a binary annotation of all genes based on the gene locations (hg19).

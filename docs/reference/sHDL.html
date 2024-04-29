@@ -64,7 +64,7 @@
 <span>  output.file <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nthreads <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  stepwise <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  fill.missing.N <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fill.missing.N <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"min"</span>, <span class="st">"max"</span>, <span class="st">"median"</span>, <span class="st">"mean"</span><span class="op">)</span>,</span>
 <span>  lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">18</span><span class="op">)</span>,</span>
 <span>  lam.cut <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  Dr.path <span class="op">=</span> <span class="st">"./Dr"</span>,</span>
@@ -75,6 +75,8 @@
 <span>  maxit <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  pgtol <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>  start.v <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  lwr <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  upr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"disk"</span>, <span class="st">"memory"</span><span class="op">)</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="st">".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"</span>,</span>
 <span>  norm.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minmax"</span>, <span class="st">"scaled"</span>, <span class="st">"none"</span><span class="op">)</span></span>
@@ -151,6 +153,14 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 <dt>start.v</dt>
 <dd><p>A vector of starting values <code>c(fold, h2, intercept)</code> for optimization.</p></dd>
+
+
+<dt>lwr</dt>
+<dd><p>Lower bounds for <code>c(fold, h2, intercept)</code>. Default is <code>NULL</code>, which means <code>c(0, 0, 0.1)</code>.</p></dd>
+
+
+<dt>upr</dt>
+<dd><p>Upper bounds for <code>c(fold, h2, intercept)</code>. Default is <code>NULL</code>, which means <code>c(M / Md, 1, 5)</code>, where <code>Md</code> is the sum of annotation weights and <code>M</code> is the total number of SNPs.</p></dd>
 
 
 <dt>mode</dt>
