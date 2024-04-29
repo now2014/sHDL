@@ -69,7 +69,8 @@ sHDL.optim <- function(
     se <- tryCatch(
       sqrt(diag(solve(-opt.first$hessian))),
       error = function(e){
-        sHDL:::log.msg("Hessian matrix is NOT invertible.\n", log.file, type="warning")
+        warn.msg <- "Hessian matrix is NOT invertible.\n"
+        sHDL:::log.msg(warn.msg, log.file, type="warning")
         NA
       }
     )
@@ -100,7 +101,7 @@ sHDL.optim <- function(
   )
 
   time <- as.numeric(Sys.time() - t0, units="secs")
-  sHDL:::log.msg(sprintf("Optimization done in %.3f seconds.\n", time), log.file, type="message")
+  sHDL:::log.msg(sprintf("Optimization done in %.3f seconds.\n", time), log.file)
   covergence <- opt$convergence
   msg <- opt$message
 
@@ -108,7 +109,8 @@ sHDL.optim <- function(
   se <- tryCatch(
     sqrt(diag(solve(-opt$hessian))),
     error = function(e){
-      sHDL:::log.msg("Hessian matrix is NOT invertible.\n", log.file, type="warning")
+      warn.msg <- "Hessian matrix is NOT invertible.\n"
+      sHDL:::log.msg(warn.msg, log.file, type="warning")
       NA
     }
   )

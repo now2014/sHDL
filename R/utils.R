@@ -38,16 +38,13 @@ format.gwas <- function(gwas.df, LD.path,
   b.found <- "b" %in% colnames(gwas.df)
   se.found <- "se" %in% colnames(gwas.df)
   if(!Z.found && !b.found && !se.found){
-    sHDL:::log.msg(
-      "Z is not available in GWAS, meanwhile either b or se is missing. Please check.",
-      log.file, type="error"
-    )
+    err.msg <- "Z, b or se is missing in GWAS. Please check.\n"
+    sHDL:::log.msg(err.msg, log.file, type="error")
   }
   if(!Z.found && b.found && se.found){
     if(abs(median(gwas.df$b) - 1) < 0.1){
-      sHDL:::log.msg(
-        "Taking log(b) in GWAS because b is likely to be OR in stead of log(OR). \n",
-        log.file, type="warning")
+      warn.msg <- "Taking log(b) in GWAS because b is likely to be OR in stead of log(OR). \n"
+      sHDL:::log.msg(warn.msg, log.file, type="warning")
       gwas.df$Z <- log(gwas.df$b) / gwas.df$se
     } else{
       gwas.df$Z <- gwas.df$b / gwas.df$se
@@ -66,10 +63,10 @@ format.gwas <- function(gwas.df, LD.path,
   gwas.df <- filter(gwas.df, !is.na(N))
   gwas.M <- length(unique(gwas.df$SNP))
   if(gwas.M < Mref*0.99){
-    sHDL:::log.msg(
-      "More than 1% SNPs in reference panel are missed in the GWAS. This may generate bias in estimation. Please make sure that you are using correct reference panel.  \n",
-      log.file, type="warning"
+    warn.msg <- sprintf(
+      "More than 1%% SNPs in reference panel are missed in the GWAS. This may generate bias in estimation. Please make sure that you are using correct reference panel.  \n"
     )
+    sHDL:::log.msg(warn.msg, log.file, type="warning")
   }
 
   sHDL:::log.msg(
@@ -77,7 +74,7 @@ format.gwas <- function(gwas.df, LD.path,
       "%d out of %d (%.2f%%) SNPs in reference panel are available in the GWAS.\n",
       gwas.M, Mref, 100*gwas.M/Mref
     ),
-    log.file, type="message"
+    log.file
   )
 
   ## remove duplicates
@@ -215,7 +212,7 @@ log.lik.wg <- function(param, ref.data, Md, M, N,
     sprintf(
       "fold: %.3f h2: %.3f intercept: %.3f lnL: %.3f time: %.3f \n",
       fold, h2, intercept, lnL, time),
-    log.file, type="message"
+    log.file
   )
   return(lnL)
 }
@@ -261,22 +258,18 @@ normD <-function(
     D <- Md / sum(D) * D
   }else if(method=="none"){
     if (minv < 0){
-      sHDL:::log.msg(
-        "The annotation weights contain negative values, which may cause bias in the estimation.\n",
-        log.file, type="warning"
-      )
+      warn.msg <- "The annotation weights contain negative values, which may cause bias in the estimation.\n"
+      sHDL:::log.msg(warn.msg, log.file, type="warning")
     }
     Md <- sum(D != 0)
     msg <- sprintf(
       "No normalization applied on %d (%.3f%%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = %.3f.\n",
       Md, Md/M, M/sum(D)*100)
-    sHDL:::log.msg(msg, log.file, type="message")
+    sHDL:::log.msg(msg, log.file)
     return(D)
   }else{
-    sHDL:::log.msg(
-      "Unknown normalization method. Please choose one of 'minmax', 'scaled', 'none'.\n",
-      log.file, type="error")
-  }
+    err.msg <- "Unknown normalization method. Please choose one of 'minmax', 'scaled', 'none'.\n"
+    sHDL:::log.msg(err.msg, log.file, type="error")}
 
   msg <- sprintf("Applied `%s` weight nomalization on %d (%.3f%%) annotated variants.\n",
     method, Md, Md/M*100)
@@ -291,7 +284,7 @@ normD <-function(
     msg <- paste0(msg, ".\n")
     warn.msg <- NULL
   }
-  sHDL:::log.msg(msg, log.file, type="message")
+  sHDL:::log.msg(msg, log.file)
   sHDL:::log.msg(warn.msg, log.file, type="warning")
   return(D)
 }
