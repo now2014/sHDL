@@ -58,10 +58,10 @@ format.gwas <- function(gwas.df, LD.path,
   gwas.df$N[is.na(gwas.df$N)] <- switch(
     fill.missing.N,
     "min" = min(gwas.df$N, na.rm = T),
-    "max" = max(gwas.df$N, na.rm = T),,
-    "median" = median(gwas.df$N, na.rm = T),,
-    "mean" = mean(gwas.df$N, na.rm = T),,
-    "none" = NA
+    "max" = max(gwas.df$N, na.rm = T),
+    "median" = median(gwas.df$N, na.rm = T),
+    "mean" = mean(gwas.df$N, na.rm = T),
+    NA
   )
   gwas.df <- filter(gwas.df, !is.na(N))
   gwas.M <- length(unique(gwas.df$SNP))
