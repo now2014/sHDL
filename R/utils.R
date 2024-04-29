@@ -63,9 +63,7 @@ format.gwas <- function(gwas.df, LD.path,
   gwas.df <- filter(gwas.df, !is.na(N))
   gwas.M <- length(unique(gwas.df$SNP))
   if(gwas.M < Mref*0.99){
-    warn.msg <- sprintf(
-      "More than 1%% SNPs in reference panel are missed in the GWAS. This may generate bias in estimation. Please make sure that you are using correct reference panel.  \n"
-    )
+    warn.msg <- "More than 1%% SNPs in reference panel are missed in the GWAS. This may generate bias in estimation. Please make sure that you are using correct reference panel.  \n"
     sHDL:::log.msg(warn.msg, log.file, type="warning")
   }
 
