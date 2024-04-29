@@ -24,13 +24,15 @@
 
 sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
   Dr.path=NULL, overwrite=FALSE, mode=c("disk", "memory"), nthreads=1,
-  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", norm.method=c("minmax", "scaled", "none")){
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*",
+  norm.method=c("minmax", "scaled", "none")){
   # use RhpcBLASctl to control the number of thread
   blas_set_num_threads(nthreads)
   omp_set_num_threads(nthreads)
   if(!is.null(Dr.path) && Dr.path!="" && !dir.exists(Dr.path))
     dir.create(Dr.path, recursive = TRUE)
   mode <- match.arg(mode)
+  if(is.null(Dr.path)) mode <- "memory"
   LD.files <- sHDL:::list.LD.ref.files(LD.path, suffix=".rda", pattern=pattern)
 
   if(!is.null(D)) D <- sHDL:::normD(D, LD.path, norm.method=norm.method, pattern=pattern)
@@ -38,16 +40,17 @@ sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
   for(i in seq_along(LD.files)){
     LD.file <- LD.files[i]
     if(!is.null(Dr.path)) Dr.file <- paste0(Dr.path, "/", basename(LD.file))
-    if(!is.null(Dr.path) && file.exists(Dr.file) && !overwrite && mode=="disk"){
+    if(mode=="disk" && file.exists(Dr.file) && !overwrite){
+      load(Dr.file) # Dr, lam, Md, M
       Dr <- Dr.file
-      Md <- NULL
       lam <- NULL
-    }else if(!is.null(Dr.path) && file.exists(Dr.file) && !overwrite && mode=="memory"){
+    }else if(mode=="memory" && file.exists(Dr.file) && !overwrite){
       load(Dr.file) # Dr, lam, Md, M
     }else{
       Dr <- NULL
-      Md <- NULL
       lam <- NULL
+      Md <- NULL
+      M <- NULL
     }
 
     if(is.null(z) && !is.null(Dr)){

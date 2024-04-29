@@ -144,7 +144,7 @@ log.lik <- function(refd, h20, h2d, intercept,
   zr <- refd$zr
   Dr <- refd$Dr
   lam <- refd$lam
-  if(is.null(lam)){
+  if(length(Dr)==1 && is.character(Dr) && file.exists(Dr)){
     e1 <- new.env()
     load(Dr, envir = e1)
     Dr <- e1$Dr
@@ -169,9 +169,9 @@ log.lik <- function(refd, h20, h2d, intercept,
   L <- tryCatch({
     chol(sigma)
   }, error = function(e){
-    NULL
+    NA
   })
-  if(is.null(L)) return(-1e18)
+  if(length(L)==1 && is.na(L)) return(-1e18)
   logdet <- 2 * sum(log(diag(L)))
   quadra <- crossprod(zr,
     forwardsolve(L, backsolve(L, zr, transpose=T), upper.tri=T))
