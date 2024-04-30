@@ -22,7 +22,8 @@ format.gwas <- function(gwas.df, LD.path,
   fill.missing.N = c("none", "min", "max", "median", "mean"), log.file = "",
   pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
   fill.missing.N <- match.arg(fill.missing.N)
-  bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim', pattern=pattern)
+  bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim',
+    pattern=pattern, log.file=log.file)
   bim <- do.call(rbind, lapply(
     bim.files, read.table, header=F,
     col.names=c('CHR', 'SNP', 'CM', 'POS', 'A1', 'A2')
@@ -91,16 +92,22 @@ format.gwas <- function(gwas.df, LD.path,
 #' @noRd
 #' @keywords internal
 list.LD.ref.files <- function(LD.path, suffix = ".rda", full.names = TRUE,
-                              pattern = ".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
+                              pattern = ".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*",
+                              log.file=""){
   segfiles <- list.files(LD.path, pattern = suffix, full.names = F)
   segfiles <- segfiles[grepl(pattern = pattern, segfiles)]
   chrom <- gsub(pattern, "\\1", segfiles)
   piece <- gsub(pattern, "\\2", segfiles)
+  if(full.names) segfiles <- paste0(LD.path, "/", segfiles)
+  if(length(chrom)==0){
+    msg <- 'No valid LD reference files found. Please check the suffix and pattern.'
+    sHDL:::log.msg(msg, log.file, type="warning")
+    return(segfiles)
+  }
   chrom <- as.numeric(chrom)
   piece <- as.numeric(piece)
   idx <- order(chrom, piece)
   segfiles <- segfiles[idx]
-  if(full.names) segfiles <- paste0(LD.path, "/", segfiles)
   return(segfiles)
 }
 
@@ -223,7 +230,8 @@ normD <-function(
   pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
 
   method <- match.arg(norm.method)
-  bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim', pattern=pattern)
+  bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim',
+    pattern=pattern, log.file=log.file)
   bim <- do.call(rbind, lapply(
     bim.files, read.table, header=F,
     col.names=c('CHR', 'SNP', 'CM', 'POS', 'A1', 'A2')

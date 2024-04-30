@@ -33,7 +33,8 @@ sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
     dir.create(Dr.path, recursive = TRUE)
   mode <- match.arg(mode)
   if(is.null(Dr.path)) mode <- "memory"
-  LD.files <- sHDL:::list.LD.ref.files(LD.path, suffix=".rda", pattern=pattern)
+  LD.files <- sHDL:::list.LD.ref.files(LD.path, suffix=".rda",
+    pattern=pattern, log.file=log.file)
 
   if(!is.null(D)) D <- sHDL:::normD(D, LD.path, norm.method=norm.method, pattern=pattern)
   ref.data <- list()
