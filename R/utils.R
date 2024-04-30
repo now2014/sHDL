@@ -104,7 +104,7 @@ list.LD.ref.files <- function(LD.path, suffix = ".rda", full.names = TRUE,
     if(length(all.segfiles) > 0){
       msg <- 'No valid LD reference files found matched the pattern. All files with given suffix will be used. \n'
       sHDL:::log.msg(msg, log.file, type="warning")
-      return(all.segfiles)
+      if(full.names) return(paste0(LD.path, "/", all.segfiles))
     }
     msg <- 'No valid LD reference files found. Please check the suffix and pattern. \n'
     sHDL:::log.msg(msg, log.file, type="error")
