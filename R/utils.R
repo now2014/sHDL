@@ -94,15 +94,21 @@ format.gwas <- function(gwas.df, LD.path,
 list.LD.ref.files <- function(LD.path, suffix = ".rda", full.names = TRUE,
                               pattern = ".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*",
                               log.file=""){
-  segfiles <- list.files(LD.path, pattern = suffix, full.names = F)
-  segfiles <- segfiles[grepl(pattern = pattern, segfiles)]
+  all.segfiles <- list.files(LD.path, pattern = suffix, full.names = F)
+  segfiles <- all.segfiles[grepl(pattern = pattern, all.segfiles)]
   chrom <- gsub(pattern, "\\1", segfiles)
   piece <- gsub(pattern, "\\2", segfiles)
   if(full.names) segfiles <- paste0(LD.path, "/", segfiles)
   if(length(chrom)==0){
-    msg <- 'No valid LD reference files found. Please check the suffix and pattern.'
-    sHDL:::log.msg(msg, log.file, type="warning")
-    return(segfiles)
+    
+    if(length(all.segfiles) > 0){
+      msg <- 'No valid LD reference files found matched the pattern. All files with given suffix will be used. \n'
+      sHDL:::log.msg(msg, log.file, type="warning")
+      return(all.segfiles)
+    }
+    msg <- 'No valid LD reference files found. Please check the suffix and pattern. \n'
+    sHDL:::log.msg(msg, log.file, type="error")
+    stop(-1)
   }
   chrom <- as.numeric(chrom)
   piece <- as.numeric(piece)
