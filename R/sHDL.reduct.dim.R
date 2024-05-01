@@ -45,7 +45,7 @@ sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
       load(Dr.file) # Dr, lam, Md, M
       Dr <- Dr.file
       lam <- NULL
-    }else if(mode=="memory" && file.exists(Dr.file) && !overwrite){
+    }else if(mode=="memory" && !is.null(Dr.file) && file.exists(Dr.file) && !overwrite){
       load(Dr.file) # Dr, lam, Md, M
     }else{
       Dr <- NULL
