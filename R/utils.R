@@ -10,7 +10,7 @@ log.msg <- function(message, log.file = "", type="message"){
     warning(message)
   }else if(type == "error"){
     stop(message)
-  }else{
+  }else if(log.file == "" && type == "message"){
     cat(message)
   }
 }
