@@ -4,9 +4,13 @@
 
 ## Introduction
 
-In practice, the density of GWAS SNPs often poses a challenge to ensuring the positive definiteness of the covariance matrix $\mathbf{\Sigma}$ for the GWAS Z-score vector $\mathbf{z}$. This presents a significant obstacle when conducting statistical modeling, as a positive definite $\mathbf{\Sigma}$ is **essential**. Moreover, the high density of SNPs results in a high-dimensional problem.
+The sHDL software provides a powerful tool for analyzing the genetic architecture of complex traits through the distribution of heritability across the genome. By integrating state-of-the-art statistical techniques with genomic functional annotations, sHDL offers a comprehensive approach to understanding the genetic basis of complex traits.
 
-The stratified high-definition likelihood (sHDL) extends the full-likelihood framework of the high-definition likelihood (HDL) method (Ning et al. 2020), addressing this issue by transforming $\mathbf{\Sigma}$ into a **reduced, positive definite** covariance matrix $\mathbf{\Sigma}_r$. Paired with Cholesky decomposition, the sHDL method proves to be highly efficient in heritability enrichment analysis.
+sHDL builds upon the success of the stratified linkage disequilibrium score regression (sLDSC) method by introducing a new stratified high-definition likelihood model. This advanced statistical model enhances the estimation efficiency for heritability enrichment parameters while reducing bias, as demonstrated through simulations and real-data analyses. Compared to sLDSC, sHDL offers 1.4 to 7.4-fold higher efficiency in estimating heritability enrichment parameters.
+
+One of the key features of sHDL is its ability to incorporate diverse genomic annotations, including gene expressions specific to cell types and cancer epigenetic information. This enables the identification of specific genomic regions and cell types associated with complex traits, leading to a deeper understanding of their genetic architecture.
+
+Through extensive validation and comparison with sLDSC, sHDL has been shown to discover novel signals and provide more accurate estimations of heritability enrichment parameters. This makes sHDL a robust and versatile tool for researchers in the field of quantitative genetics, offering new insights into the polygenic contributions to complex traits.
 
 ## Installation
 
