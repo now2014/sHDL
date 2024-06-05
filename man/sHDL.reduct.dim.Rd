@@ -14,7 +14,8 @@ sHDL.reduct.dim(
   mode = c("disk", "memory"),
   nthreads = 1,
   pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*",
-  norm.method = c("minmax", "scaled", "none")
+  norm.method = c("minmax", "scaled", "none"),
+  log.file = ""
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ sHDL.reduct.dim(
 \item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
 
 \item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.}
+
+\item{log.file}{Where the log should be written. If you do not specify a file, the log will be printed on the console.}
 }
 \value{
 A list is returned with:

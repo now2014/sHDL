@@ -67,7 +67,8 @@
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"disk"</span>, <span class="st">"memory"</span><span class="op">)</span>,</span>
 <span>  nthreads <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="st">".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"</span>,</span>
-<span>  norm.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minmax"</span>, <span class="st">"scaled"</span>, <span class="st">"none"</span><span class="op">)</span></span>
+<span>  norm.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minmax"</span>, <span class="st">"scaled"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
+<span>  log.file <span class="op">=</span> <span class="st">""</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -111,6 +112,10 @@
 
 <dt>norm.method</dt>
 <dd><p>The normalization method, either <code>"minmax"</code> (default), <code>"scaled"</code> or <code>"none"</code>. If <code>"minmax"</code>, the annotation weight vector <code>D</code> is normalized to [0, 1]. If <code>"scaled"</code>, the sum of normalized vector <code>D</code> is scaled to the number of annotated SNPs. If <code>"none"</code>, the annotation weight vector <code>D</code> is not normalized.</p></dd>
+
+
+<dt>log.file</dt>
+<dd><p>Where the log should be written. If you do not specify a file, the log will be printed on the console.</p></dd>
 
 </dl></div>
     <div class="section level2">
