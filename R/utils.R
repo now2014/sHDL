@@ -229,7 +229,7 @@ normD <- function(
     idx <- Md == M
     if(sum(idx) >= 1){
       minv <- apply(D, 2, min, na.rm=T)
-      D <- t(t(D) - minv, na.rm=T)
+      D <- t(t(D) - minv)
       Md <- colSums(D > 0, na.rm=T)
     }
     D <- t(Md / colSums(D, na.rm=T) * t(D))
