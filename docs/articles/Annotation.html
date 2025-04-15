@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,7 +80,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Genomic annotations</h1>
             
-            <h4 data-toc-skip class="date">2024-06-05</h4>
+            <h4 data-toc-skip class="date">2025-04-15</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/now2014/sHDL/blob/main/vignettes/Annotation.Rmd" class="external-link"><code>vignettes/Annotation.Rmd</code></a></small>
       <div class="d-none name"><code>Annotation.Rmd</code></div>
@@ -180,26 +180,31 @@ located in the 10% genes with the highest specificity scores.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">bim</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'SNP'</span>, <span class="st">'chrom'</span>, <span class="st">'pos'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## match annotated variants ##</span></span>
-<span><span class="va">gene2snp</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">j</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">cur.chrom</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">j</span>, <span class="st">'chrom'</span><span class="op">]</span></span>
-<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">j</span>, <span class="st">'start'</span><span class="op">]</span></span>
-<span>  <span class="va">e</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">j</span>, <span class="st">'end'</span><span class="op">]</span></span>
-<span>  <span class="va">bim</span> <span class="op">&lt;-</span> <span class="va">bim</span><span class="op">[</span><span class="va">bim</span><span class="op">$</span><span class="va">chrom</span> <span class="op">==</span> <span class="va">cur.chrom</span>, <span class="op">]</span></span>
-<span>  <span class="va">bim</span> <span class="op">&lt;-</span> <span class="va">bim</span><span class="op">[</span><span class="va">bim</span><span class="op">$</span><span class="va">pos</span> <span class="op">&gt;=</span> <span class="va">s</span> <span class="op">&amp;</span> <span class="va">bim</span><span class="op">$</span><span class="va">pos</span> <span class="op">&lt;=</span> <span class="va">e</span>, <span class="op">]</span></span>
-<span>  <span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">i</span>, <span class="va">bim</span><span class="op">$</span><span class="va">SNP</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">nsnps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span><span class="op">(</span><span class="va">j</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">1000</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
-<span>    <span class="st">'# of processed genes %d: # of annotated %d variants (%.2f%%) \n'</span>,</span>
-<span>    <span class="va">j</span>, <span class="va">nsnps</span>, <span class="va">nsnps</span><span class="op">/</span><span class="va">M</span><span class="op">*</span><span class="fl">100</span></span>
-<span>  <span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span></span>
+<span><span class="va">gene2snp</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">gene.pos</span>, <span class="va">bim</span>, <span class="va">mc.cores</span><span class="op">=</span><span class="fl">4</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">map.gene</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">gene.pos.chr</span>, <span class="va">bim.chr</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">gene.pos.chr</span><span class="op">[</span><span class="va">i</span>, <span class="st">'start'</span><span class="op">]</span></span>
+<span>    <span class="va">e</span> <span class="op">&lt;-</span> <span class="va">gene.pos.chr</span><span class="op">[</span><span class="va">i</span>, <span class="st">'end'</span><span class="op">]</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">bim.chr</span><span class="op">[</span><span class="va">bim.chr</span><span class="op">$</span><span class="va">pos</span> <span class="op">&gt;=</span> <span class="va">s</span> <span class="op">&amp;</span> <span class="va">bim.chr</span><span class="op">$</span><span class="va">pos</span> <span class="op">&lt;=</span> <span class="va">e</span>, <span class="op">]</span><span class="op">$</span><span class="va">SNP</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">bim</span><span class="op">$</span><span class="va">chrom</span><span class="op">)</span></span>
+<span>  <span class="va">all.snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span><span class="op">(</span><span class="va">cur.chrom</span> <span class="kw">in</span> <span class="va">chroms</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">gene.pos.chr</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">gene.pos</span><span class="op">$</span><span class="va">chrom</span> <span class="op">==</span> <span class="va">cur.chrom</span>, <span class="op">]</span></span>
+<span>    <span class="va">bim.chr</span> <span class="op">&lt;-</span> <span class="va">bim</span><span class="op">[</span><span class="va">bim</span><span class="op">$</span><span class="va">chrom</span> <span class="op">==</span> <span class="va">cur.chrom</span>, <span class="op">]</span></span>
+<span>    <span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">mclapply</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gene.pos.chr</span><span class="op">)</span><span class="op">)</span>, <span class="va">map.gene</span>,</span>
+<span>      gene.pos.chr<span class="op">=</span><span class="va">gene.pos.chr</span>, bim.chr<span class="op">=</span><span class="va">bim.chr</span>,</span>
+<span>      mc.cores<span class="op">=</span><span class="va">mc.cores</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">all.snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">all.snps</span>, <span class="va">snps</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">all.snps</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">bim</span><span class="op">)</span></span>
-<span><span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">gene2snp</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gene.pos</span><span class="op">)</span>, init<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu">gene2snp</span><span class="op">(</span><span class="va">gene.pos</span>, <span class="va">bim</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## create the annotation weights for sHDL ##</span></span>
-<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">snps</span></span></code></pre></div>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">1</span>, dimnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">snps</span>, <span class="st">'Top10.genes'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <ul>
 <li>Step 02. Run <code>sHDL</code> on this binary annotation with the
 birth weight GWAS summary statistics from <code>HDL</code>.</li>
@@ -207,25 +212,20 @@ birth weight GWAS summary statistics from <code>HDL</code>.</li>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">::</span><span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span></span>
-<span>  <span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>,</span>
+<span>  <span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, mc.cores<span class="op">=</span><span class="fl">4</span>,</span>
 <span>  stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, mode<span class="op">=</span><span class="st">'memory'</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co"># List of 13</span></span>
-<span><span class="co">#  $ time         : num 78.8</span></span>
-<span><span class="co">#  $ fold         : num 1.3</span></span>
-<span><span class="co">#  $ h2           : num 0.164</span></span>
-<span><span class="co">#  $ intercept    : num 0.963</span></span>
-<span><span class="co">#  $ fold.se      : num 0.105</span></span>
-<span><span class="co">#  $ h2.se        : num 0.00546</span></span>
-<span><span class="co">#  $ intercept.se : num 0.0107</span></span>
-<span><span class="co">#  $ fold.p       : num 0.00374</span></span>
-<span><span class="co">#  $ h2.p         : num 2.69e-198</span></span>
-<span><span class="co">#  $ intercept.p  : num 0</span></span>
-<span><span class="co">#  $ stepwise     : logi TRUE</span></span>
-<span><span class="co">#  $ converged    : logi TRUE</span></span>
-<span><span class="co">#  $ optim.message: chr "CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL"</span></span></code></pre></div>
+<span><span class="co"># print(knitr::kable(res))</span></span>
+<span></span>
+<span><span class="co"># |item             | estimation|        se|         p|note                                             |</span></span>
+<span><span class="co"># |:----------------|----------:|---------:|---------:|:------------------------------------------------|</span></span>
+<span><span class="co"># |time             | 60.7460063|        NA|        NA|seconds                                          |</span></span>
+<span><span class="co"># |h2               |  0.1639165| 0.0054560| 0.0000000|total heritability                               |</span></span>
+<span><span class="co"># |intercept        |  0.9632359| 0.0106590| 0.0000000|intercept                                        |</span></span>
+<span><span class="co"># |fold.Top10.genes |  1.3037835| 0.1047777| 0.0037398|enrichment fold                                  |</span></span>
+<span><span class="co"># |converged        |         NA|        NA|        NA|TRUE                                             |</span></span>
+<span><span class="co"># |message          |         NA|        NA|        NA|CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL |</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="continuous-annotation">Continuous annotation<a class="anchor" aria-label="anchor" href="#continuous-annotation"></a>
@@ -291,14 +291,21 @@ weights.</p>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">snps.w</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">bim</span><span class="op">)</span></span>
-<span><span class="va">snps.w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">mapw</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gene.df</span><span class="op">)</span>, init<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">snps.w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">mapw</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gene.df</span><span class="op">)</span>, init<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">snps.w</span>, ncol<span class="op">=</span><span class="fl">1</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">snps.w</span><span class="op">)</span>, <span class="st">'raw.W'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">D</span>, <span class="st">'raw.W.rds'</span><span class="op">)</span></span></code></pre></div>
 </li>
 <li>
 <p>Step 03. Check the weights of variants.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">snps.w</span><span class="op">)</span></span>
-<span><span class="co">#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co"># 0.00000 0.02038 0.04425 0.06551 0.07747 1.65767 </span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span></span>
+<span> <span class="co">#     raw.W        </span></span>
+<span> <span class="co"># Min.   :0.00000  </span></span>
+<span> <span class="co"># 1st Qu.:0.02038  </span></span>
+<span> <span class="co"># Median :0.04425  </span></span>
+<span> <span class="co"># Mean   :0.06551  </span></span>
+<span> <span class="co"># 3rd Qu.:0.07747  </span></span>
+<span> <span class="co"># Max.   :1.65767</span></span></code></pre></div>
 </li>
 </ul>
 <div class="section level3">
@@ -310,38 +317,39 @@ degree to which the selected variant pertains to the annotated
 category.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">'UKB_array_SVD_eigen90_extraction'</span></span>
-<span><span class="va">D.minmax</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">:::</span><span class="fu">normD</span><span class="op">(</span><span class="va">snps.w</span>, <span class="va">LD.path</span>, norm.method<span class="op">=</span><span class="st">'minmax'</span><span class="op">)</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'raw.W.rds'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'raw.W.minmax'</span></span>
+<span><span class="va">D.minmax</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">:::</span><span class="fu">normD</span><span class="op">(</span><span class="va">D</span>, <span class="va">LD.path</span>, norm.method<span class="op">=</span><span class="st">'minmax'</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Applied `minmax` weight nomalization on 121235 (39.424%) annotated variants.</span></span>
-<span><span class="co"># The theoretical upper boundary for enrichment fold is 61.419.</span></span>
+<span><span class="co"># Annotation name(s): [raw.W.minmax].</span></span>
+<span><span class="co"># Applied `minmax` weight nomalization on [121235 (39.424%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [61.419].</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">D.minmax</span><span class="op">)</span></span>
-<span><span class="co">#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co"># 0.00000 0.00000 0.00000 0.01628 0.02030 1.00000 </span></span></code></pre></div>
+<span> <span class="co">#  raw.W.minmax    </span></span>
+<span> <span class="co"># Min.   :0.00000</span></span>
+<span> <span class="co"># 1st Qu.:0.00000</span></span>
+<span> <span class="co"># Median :0.00000</span></span>
+<span> <span class="co"># Mean   :0.01628</span></span>
+<span> <span class="co"># 3rd Qu.:0.02030</span></span>
+<span> <span class="co"># Max.   :1.00000</span></span></code></pre></div>
 <p>Run <code>sHDL</code> with <code>minmax</code> normalization.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">'UKB_array_SVD_eigen90_extraction'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'raw.W.rds'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'raw.W.minmax'</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">::</span><span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span></span>
-<span>  <span class="va">snps.w</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>,</span>
+<span>  <span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, mc.cores<span class="op">=</span><span class="fl">4</span>,</span>
 <span>  stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, mode<span class="op">=</span><span class="st">'memory'</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, norm.method<span class="op">=</span><span class="st">'minmax'</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co"># List of 13</span></span>
-<span><span class="co">#  $ time         : num 64</span></span>
-<span><span class="co">#  $ fold         : num 8.74</span></span>
-<span><span class="co">#  $ h2           : num 0.164</span></span>
-<span><span class="co">#  $ intercept    : num 0.963</span></span>
-<span><span class="co">#  $ fold.se      : num 0.91</span></span>
-<span><span class="co">#  $ h2.se        : num 0.00546</span></span>
-<span><span class="co">#  $ intercept.se : num 0.0107</span></span>
-<span><span class="co">#  $ fold.p       : num 1.72e-17</span></span>
-<span><span class="co">#  $ h2.p         : num 2.69e-198</span></span>
-<span><span class="co">#  $ intercept.p  : num 0</span></span>
-<span><span class="co">#  $ stepwise     : logi TRUE</span></span>
-<span><span class="co">#  $ converged    : logi TRUE</span></span>
-<span><span class="co">#  $ optim.message: chr "CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL"</span></span></code></pre></div>
+<span><span class="co"># print(str(res))</span></span>
+<span><span class="co"># 'data.frame':   6 obs. of  5 variables:</span></span>
+<span><span class="co">#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W.minmax" ...</span></span>
+<span><span class="co">#  $ estimation: num  56.354 0.164 0.963 8.741 NA ...</span></span>
+<span><span class="co">#  $ se        : num  NA 0.00546 0.01066 0.90955 NA ...</span></span>
+<span><span class="co">#  $ p         : num  NA 2.69e-198 0.00 1.72e-17 NA ...</span></span>
+<span><span class="co">#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="scaled-normalization">Scaled normalization<a class="anchor" aria-label="anchor" href="#scaled-normalization"></a>
@@ -350,38 +358,39 @@ category.</p>
 the number of annotated variants.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">'UKB_array_SVD_eigen90_extraction'</span></span>
-<span><span class="va">D.scaled</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">:::</span><span class="fu">normD</span><span class="op">(</span><span class="va">snps.w</span>, <span class="va">LD.path</span>, norm.method<span class="op">=</span><span class="st">'scaled'</span><span class="op">)</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'raw.W.rds'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'raw.W.scaled'</span></span>
+<span><span class="va">D.scaled</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">:::</span><span class="fu">normD</span><span class="op">(</span><span class="va">D</span>, <span class="va">LD.path</span>, norm.method<span class="op">=</span><span class="st">'scaled'</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Applied `scaled` weight nomalization on 121235 (39.424%) annotated variants.</span></span>
-<span><span class="co"># The theoretical upper boundary for enrichment fold is 2.537.</span></span>
+<span><span class="co"># Annotation name(s): [raw.W.scaled].</span></span>
+<span><span class="co"># Applied `scaled` weight nomalization on [121235 (39.424%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [2.537].</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">D.scaled</span><span class="op">)</span></span>
-<span><span class="co">#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">#  0.0000  0.0000  0.0000  0.3942  0.4916 24.2134 </span></span></code></pre></div>
+<span> <span class="co">#  raw.W.scaled    </span></span>
+<span> <span class="co"># Min.   : 0.0000  </span></span>
+<span> <span class="co"># 1st Qu.: 0.0000  </span></span>
+<span> <span class="co"># Median : 0.0000  </span></span>
+<span> <span class="co"># Mean   : 0.3942  </span></span>
+<span> <span class="co"># 3rd Qu.: 0.4916  </span></span>
+<span> <span class="co"># Max.   :24.2134 </span></span></code></pre></div>
 <p>Run <code>sHDL</code> with <code>scaled</code> normalization.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">'UKB_array_SVD_eigen90_extraction'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'raw.W.rds'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'raw.W.scaled'</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">::</span><span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span></span>
-<span>  <span class="va">snps.w</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>,</span>
+<span>  <span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, mc.cores<span class="op">=</span><span class="fl">4</span>,</span>
 <span>  stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, mode<span class="op">=</span><span class="st">'memory'</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, norm.method<span class="op">=</span><span class="st">'scaled'</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co"># List of 13</span></span>
-<span><span class="co">#  $ time         : num 73</span></span>
-<span><span class="co">#  $ fold         : num 1.2</span></span>
-<span><span class="co">#  $ h2           : num 0.164</span></span>
-<span><span class="co">#  $ intercept    : num 0.963</span></span>
-<span><span class="co">#  $ fold.se      : num 0.0231</span></span>
-<span><span class="co">#  $ h2.se        : num 0.00546</span></span>
-<span><span class="co">#  $ intercept.se : num 0.0107</span></span>
-<span><span class="co">#  $ fold.p       : num 1.73e-17</span></span>
-<span><span class="co">#  $ h2.p         : num 2.69e-198</span></span>
-<span><span class="co">#  $ intercept.p  : num 0</span></span>
-<span><span class="co">#  $ stepwise     : logi TRUE</span></span>
-<span><span class="co">#  $ converged    : logi TRUE</span></span>
-<span><span class="co">#  $ optim.message: chr "CONVERGENCE: REL_REDUCTION_OF_F &lt;= FACTR*EPSMCH"</span></span></code></pre></div>
+<span><span class="co"># print(str(res))</span></span>
+<span><span class="co"># 'data.frame':   6 obs. of  5 variables:</span></span>
+<span><span class="co">#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W.scaled" ...</span></span>
+<span><span class="co">#  $ estimation: num  64.204 0.164 0.963 1.197 NA ...</span></span>
+<span><span class="co">#  $ se        : num  NA 0.00546 0.01066 0.02313 NA ...</span></span>
+<span><span class="co">#  $ p         : num  NA 2.69e-198 0.00 1.73e-17 NA ...</span></span>
+<span><span class="co">#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="no-normalization">No normalization<a class="anchor" aria-label="anchor" href="#no-normalization"></a>
@@ -390,37 +399,37 @@ the number of annotated variants.</p>
 normalization.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">'UKB_array_SVD_eigen90_extraction'</span></span>
-<span><span class="va">D.none</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">:::</span><span class="fu">normD</span><span class="op">(</span><span class="va">snps.w</span>, <span class="va">LD.path</span>, norm.method<span class="op">=</span><span class="st">'none'</span><span class="op">)</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'raw.W.rds'</span><span class="op">)</span></span>
+<span><span class="va">D.none</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">:::</span><span class="fu">normD</span><span class="op">(</span><span class="va">D</span>, <span class="va">LD.path</span>, norm.method<span class="op">=</span><span class="st">'none'</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># No normalization applied on 121235 (39.424%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = 37.051.</span></span>
+<span><span class="co"># Annotation name(s): [raw.W].</span></span>
+<span><span class="co"># No normalization applied on [121235 (39.424%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [37.051].</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">D.none</span><span class="op">)</span></span>
-<span><span class="co">#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co"># 0.00000 0.00000 0.00000 0.02699 0.03366 1.65767 </span></span></code></pre></div>
+<span> <span class="co">#     raw.W        </span></span>
+<span> <span class="co"># Min.   :0.00000  </span></span>
+<span> <span class="co"># 1st Qu.:0.00000  </span></span>
+<span> <span class="co"># Median :0.00000  </span></span>
+<span> <span class="co"># Mean   :0.02699  </span></span>
+<span> <span class="co"># 3rd Qu.:0.03366  </span></span>
+<span> <span class="co"># Max.   :1.65767</span></span></code></pre></div>
 <p>Run <code>sHDL</code> without annotation weights normalization.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">'UKB_array_SVD_eigen90_extraction'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'raw.W.rds'</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">::</span><span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span></span>
-<span>  <span class="va">snps.w</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>,</span>
+<span>  <span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, mc.cores<span class="op">=</span><span class="fl">4</span>,</span>
 <span>  stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, mode<span class="op">=</span><span class="st">'memory'</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, norm.method<span class="op">=</span><span class="st">'none'</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co"># List of 13</span></span>
-<span><span class="co">#  $ time         : num 70.8</span></span>
-<span><span class="co">#  $ fold         : num 5.62</span></span>
-<span><span class="co">#  $ h2           : num 0.164</span></span>
-<span><span class="co">#  $ intercept    : num 0.963</span></span>
-<span><span class="co">#  $ fold.se      : num 0.543</span></span>
-<span><span class="co">#  $ h2.se        : num 0.00546</span></span>
-<span><span class="co">#  $ intercept.se : num 0.0107</span></span>
-<span><span class="co">#  $ fold.p       : num 1.73e-17</span></span>
-<span><span class="co">#  $ h2.p         : num 2.69e-198</span></span>
-<span><span class="co">#  $ intercept.p  : num 0</span></span>
-<span><span class="co">#  $ stepwise     : logi TRUE</span></span>
-<span><span class="co">#  $ converged    : logi TRUE</span></span>
-<span><span class="co">#  $ optim.message: chr "CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL"</span></span></code></pre></div>
+<span><span class="co"># print(str(res))</span></span>
+<span><span class="co"># 'data.frame':   6 obs. of  5 variables:</span></span>
+<span><span class="co">#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W" ...</span></span>
+<span><span class="co">#  $ estimation: num  63.831 0.164 0.963 5.619 NA ...</span></span>
+<span><span class="co">#  $ se        : num  NA 0.00546 0.01066 0.54271 NA ...</span></span>
+<span><span class="co">#  $ p         : num  NA 2.69e-198 0.00 1.73e-17 NA ...</span></span>
+<span><span class="co">#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

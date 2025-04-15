@@ -23,63 +23,81 @@ Here are the workflow of the process:
 library(sHDL)
 
 ## function to read GWAS Z-scores and sample size N from GWAS summary statistics ##
-readZ <- function(gwas.file, LD.path, all.snps){
-  cat('Reading', gwas.file, '\n')
-  gwas.df <- data.table::fread(gwas.file, header=TRUE)
-  gwas.df <- sHDL:::format.gwas(gwas.df, LD.path)
-  Z <- rep(0, length(all.snps))
-  names(Z) <- all.snps
-  Z[gwas.df$SNP] <- gwas.df$Z
-  Z <- unname(Z)
-  N <- median(gwas.df$N, na.rm=TRUE)
-  return(c(N, Z))
+read.gwas <- function(matZ, phe, gwas.dir=NULL, Ns=NULL, suffix='.sumstats.gz'){
+  gwas.file <- paste0(gwas.dir, '/', phe, suffix)
+  cat('Reading ', gwas.file, '\n')
+  dfi <- data.table::fread(gwas.file, sep='\t', header=TRUE)
+  snps <- dfi$SNP
+  N <- median(dfi$N, na.rm=TRUE)
+  Z <- matrix(dfi$Z, ncol=1)
+  ## add N to first row
+  Z <- rbind(N, Z)
+  row.names(Z) <- c('N', snps)
+
+  colnames(Z) <- phe
+  if(is.null(matZ)){
+    matZ <- Z
+  } else {
+    matZ <- cbind(matZ, Z)
+  }
+  return(matZ)
 }
 
+convertZr.batch <- function(
+  phes, gwas.dir, zr.dir, LD.path, step=500, gwas.suffix='.sumstats.gz',
+  lam.cut=0.1, mc.cores=8, pattern='.*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*', overwrite=FALSE){
 
-## extract all snps in the LD reference panel ##
+  if(length(phes) == 0) return(NULL)
+  for(s in seq(1, length(phes), by=step)){
+    e <- min(s+step-1, length(phes))
+    Z <- reduce(phes[s:e], .f=read.gwas, gwas.dir=gwas.dir, suffix=gwas.suffix, .init=NULL)
+    N <- Z[1, ]
+    Z <- Z[-1, ]
+    N <- as.numeric(unlist(N))
+    names(N) <- colnames(Z)
+    ref.data <- sHDL::sHDL.reduct.dim(LD.path, z=Z, D=NULL, lam.cut=lam.cut, Dr.path=NULL,
+      overwrite=FALSE, mode='disk', mc.cores=mc.cores, pattern=pattern)
+    zr <- lapply(ref.data, function(x) x$zr)
+    rs <- unlist(lapply(zr, function(x) nrow(x)))
+
+    ## convert zr to list by phes
+    zr <- do.call(rbind, zr)
+    zr <- lapply(1:ncol(zr), function(i, rs=NULL, phes=NULL){
+      zz <- zr[, i]
+      e <- cumsum(rs)
+      s <- c(1, e[-length(e)]+1)
+      zz <- sapply(1:length(s), function(j) zz[s[j]:e[j]])
+      return(zz)
+    }, rs=rs, phes=colnames(Z))
+    names(zr) <- colnames(Z)
+    for(phe in names(zr)){
+      cur.zr <- list()
+      cur.zr$zr <- zr[[phe]]
+      cur.zr$N <- unname(unlist(N[phe]))
+      saveRDS(cur.zr, file=paste0(zr.dir, '/', phe, '.rds'))
+    }
+  }
+}
+
+overwrite <- FALSE
 LD.path <- '/path/to/UKB_array_SVD_eigen90_extraction'
-all.snps <- do.call(rbind, lapply(
-  sHDL:::list.LD.ref.files(LD.path, suffix='.bim'), data.table::fread, header=FALSE, select=2
-))
-all.snps <- unname(unlist(all.snps))
-
-## combine all GWAS Z-scores into a large matrix matZ ##
-gwas.dir <- '/path/to/all/gwas/summary/statistics'
-gwas.files <- list.files(gwas.dir, pattern='*.gz', full.names=TRUE, recursive=FALSE)
-phes <- gsub('\\.gz', '', basename(gwas.files)) # extract phenotype name
-phe2N <- rep(0, length(phes))
-matZ <- matrix(0, ncol=length(phes), nrow=length(all.snps))
-colnames(matZ) <- phes
-rownames(matZ) <- all.snps
-
-for(i in seq_along(gwas.files)){
-  zz <- readZ(gwas.files[i], LD.path, all.snps)
-  phe2N[i] <- zz[1]
-  matZ[, i] <- zz[-1]
-}
-
-## Convert matZ to zr ##
 lam.cut <- 1
-nthreads <- 8
-ref.data <- sHDL.reduct.dim(
-  LD.path, z=Z, D=NULL, lam.cut=lam.cut, Dr.path=NULL,
-  overwrite=FALSE, mode='memory', nthreads=nthreads
-)
-zr <- lapply(ref.data, function(x) x$zr)
-rs <- unlist(lapply(zr, function(x) nrow(x)))
+mc.cores <- 8
+step <- 500
+gwas.dir <- '/path/to/gwas/sumstats'
+gwas.suffix <- '.sumstats.gz'
+zr.dir <- '/path/to/store/zr'
+pattern <- '.*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*'
 
-## convert zr to list by phes
-zr <- do.call(rbind, zr)
-zr <- lapply(1:ncol(zr), function(i, rs=NULL, phes=NULL){
-    zz <- zr[, i]
-    e <- cumsum(rs)
-    s <- c(1, e[-length(e)]+1)
-    zz <- sapply(1:length(s), function(j) zz[s[j]:e[j]])
-    return(zz)
-  }, rs=rs, phes=colnames(Z)
-)
-names(zr) <- colnames(Z)
-save(zr, phe2N, file='zr-phe2N.rda')
+phes <- gsub(gwas.suffix, '', list.files(gwas.dir, pattern=gwas.suffix))
+if(!dir.exists(zr.dir)) dir.create(zr.dir, recursive=TRUE)
+exist.phes <- gsub('\\.rds', '', list.files(zr.dir, pattern='*.rds'))
+if(!overwrite) phes <- setdiff(phes, exist.phes)
+cat('Converting', length(phes), 'traits...\n')
+
+#### convert z to zr ####
+convertZr.batch(phes, gwas.dir, zr.dir, LD.path, step=step, gwas.suffix=gwas.suffix,
+                lam.cut=lam.cut, mc.cores=mc.cores, pattern=pattern, overwrite=overwrite)
 ```
 
 ## Step 02. Convert genomic annotations to $\mathbf{D}_r$
@@ -87,81 +105,88 @@ save(zr, phe2N, file='zr-phe2N.rda')
 ```R
 #!/usr/bin/env Rscript
 
-read.annot <- function(annot.name){
-  ## write this function to return the D vector of given annot.name
+read.annot <- function(ann.name, annot.dir){
+  ## write this function to return the D matrix of given ann.name
+  return(D)
 }
 
-library(sHDL)
+create.D <- function(
+  annot.names, LD.path, annot.dir,
+  pattern='.*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*'){
 
-overwrite <- FALSE
-nthreads <- 4
+  D <- NULL
+  for(ann.name in annot.names){
+    dD <- read.annot(ann.name, annot.dir)
+    dD <- sHDL:::normD(dD, LD.path, norm.method = 'none', pattern = pattern)
+    D <- cbind(D, dD)
+  }
+  return(D)
+}
+
+annot.dir <- '/path/to/directory/of/annotations'
 lam.cut <- 1
-out.dir <- 'Dr-lam-1'
-LD.path <- '/path/to/UKB_imputed_SVD_eigen99_extraction'
+Dr.path <- './sHDL_Dr_lam_1'
+overwrite <- FALSE
+mc.cores <- 8
+pattern <- '.*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*'
+norm.method <- 'minmax'
 annot.names <- c('all', 'your', 'annot', 'names')
 
-for(annot.name in annot.names){
-  Dr.path <- paste0(out.dir, '/', annot.name)
-  D <- read.annot(annot.name)
-  ref.data <- sHDL.reduct.dim(
-    LD.path, z=NULL, D=D, lam.cut=lam.cut, Dr.path=Dr.path,
-    overwrite=FALSE, mode='disk', nthreads=nthreads
-  )
-}
+## read D matrix
+D <- create.D(annot.names, LD.path, annot.dir, pattern)
+
+## convert D to Dr
+ref.data <- sHDL::sHDL.reduct.dim(
+  LD.path, z=NULL, D=D, lam.cut=lam.cut, Dr.path=Dr.path, overwrite=overwrite,
+  mode='disk', mc.cores=mc.cores, pattern=pattern, norm.method=norm.method
+)
 ```
 
 ## Step 03. Run sHDL in parallel
 
 ```R
-#!/usr/bin/env Rscript
-library(sHDL)
-library(parallel)
-
-run.sHDL <- function(phe, ref.data, phe2N, zr, tsv.dir,
-  overwrite=FALSE){
-  tsv.file <- paste0(tsv.dir, '/', phe, '.tsv')
-  log.file <- paste0(tsv.dir, '/', phe, '.log')
+run.sHDL <- function(phe, zr.dir, res.dir, ref.data, overwrite=FALSE){
+  tsv.file <- paste0(res.dir, '/', phe, '.tsv')
+  log.file <- paste0(res.dir, '/', phe, '.log')
   if(file.exists(tsv.file) && !overwrite) return(NULL)
-  # add zr to ref.data
-  for(i in seq_along(ref.data)){
-    ref.data[[i]]$zr <- zr[[phe]][[i]]
+  if(file.exists(log.file)) file.remove(log.file)
+
+  zr.N <- readRDS(paste0(zr.dir, '/', phe, '.rds'))
+  N <- zr.N$N
+  for(i in seq_len(length(ref.data))){
+    rank <- length(ref.data[[i]]$lam)
+    ref.data[[i]]$zr <- zr.N$zr[[i]][seq_len(rank)]
   }
-  start.v <- c(1, 0.1, 1)
-  res <- sHDL::sHDL.optim(ref.data, phe2N[phe], start.v=start.v,
-    output.file=tsv.file, log.file=log.file, stepwise = TRUE, verbose=TRUE
+  res <- sHDL::sHDL.optim(ref.data, N, output.file=tsv.file,
+    log.file=log.file, stepwise = TRUE, verbose=TRUE
   )
   return(res)
 }
 
-load.Drs <- function(Dr.path){
-  Drs <- lapply(sHDL:::list.LD.ref.files(Dr.path), function(i){
-    load(i)
-    return(list(Dr=Dr, lam=lam, Md=Md, M=M))
-  })
-  return(Drs)
-}
-
 overwrite <- FALSE
-nthreads <- 10
+zr.dir <- '/path/to/store/zr'
+Dr.path <- './sHDL_Dr_lam_1'
+out.dir <- './res-sHDL'
+mc.cores <- 8
+mode <- 'memory'
 lam.cut <- 1
-out.dir <- 'res-sHDL'
-Dr.dir <- 'Dr-lam-1'
+pattern <- '.*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*'
 
-annot.names <- c('all', 'your', 'annot', 'names')
-load('zr-phe2N.rda') # zr, phe2N
-phes <- names(zr)
+annot.names <- list.dirs(Dr.path, recursive = FALSE, full.names=FALSE)
+phes <- list.files(zr.dir, '*.rds$', recursive = FALSE, full.names=FALSE)
+phes <- gsub('\\.rds$', '', phes)
 
+for(ann.name in annot.names){
+  res.dir <- paste0(out.dir, '/', ann.name)
+  if(!dir.exists(res.dir)) dir.create(res.dir, recursive = TRUE)
+  exist.phes <- gsub('\\.tsv$', '', list.files(res.dir, pattern='*.tsvs'))
+  if(!overwrite) phes <- setdiff(phes, exist.phes)
+  if(length(phes) < 1) next
 
-for(annot.name in annot.names){
-  Dr.path <- paste0(Dr.dir, '/', annot.name)
-  tsv.dir <- paste0(out.dir, '/', annot.name)
-  ref.data <- load.Drs(Dr.path)
-  if(!dir.exists(tsv.dir)) dir.create(tsv.dir, recursive=TRUE)
-
-  cat('annotation:', annot.name, '\n')  
-  tmp <- mclapply(phes, run.sHDL, zr=zr, phe2N=phe2N, ref.data=ref.data,
-    tsv.dir=tsv.dir, overwrite=overwrite, mc.cores=nthreads)
+  ref.data <- sHDL:::load.Dr(Dr.path, ann.name, lam.cut=lam.cut,
+    pattern=pattern, mc.cores=mc.cores, mode=mode)
+  tmp <- parallel::mclapply(
+    phes, run.sHDL, zr.dir, res.dir, ref.data, mc.cores=mc.cores
+  )
 }
-
 ```
-

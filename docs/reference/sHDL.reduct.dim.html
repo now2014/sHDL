@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,10 +65,11 @@
 <span>  Dr.path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"disk"</span>, <span class="st">"memory"</span><span class="op">)</span>,</span>
-<span>  nthreads <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  mc.cores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="st">".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"</span>,</span>
 <span>  norm.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minmax"</span>, <span class="st">"scaled"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
-<span>  log.file <span class="op">=</span> <span class="st">""</span></span>
+<span>  log.file <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  nthreads <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -83,11 +84,11 @@
 
 
 <dt>D</dt>
-<dd><p>A vector of genomic annotations with vector names of SNP IDs.</p></dd>
+<dd><p>A matrix of annotation weights with rownames of SNP IDs and colnames specifying the annotation names.</p></dd>
 
 
 <dt>lam.cut</dt>
-<dd><p>Eigenvalue cutoff for LD matrices, default <code>lam.cut = NULL</code>, which means no cutoff.</p></dd>
+<dd><p>Eigenvalue cutoff for LD matrices, default <code>lam.cut = NULL</code>, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.</p></dd>
 
 
 <dt>Dr.path</dt>
@@ -102,8 +103,8 @@
 <dd><p>Whether to store Dr to disk or memory, default <code>mode = "disk"</code>. If <code>mode = "disk"</code>, <code>Dr</code> is stored to disk (path returned only) and lam are not returned. If <code>mode = "memory"</code>, <code>Dr</code> and <code>lam</code> are returned.</p></dd>
 
 
-<dt>nthreads</dt>
-<dd><p>Number of threads to use for matrix operations, default <code>nthreads = 1</code>.</p></dd>
+<dt>mc.cores</dt>
+<dd><p>Number of cores to use for parallelization, default <code>mc.cores = 1</code>.</p></dd>
 
 
 <dt>pattern</dt>
@@ -116,6 +117,10 @@
 
 <dt>log.file</dt>
 <dd><p>Where the log should be written. If you do not specify a file, the log will be printed on the console.</p></dd>
+
+
+<dt>nthreads</dt>
+<dd><p>Number of threads to use for matrix operations, default <code>nthreads = 1</code>. The default value is suitable for most cases, do not change it unless you are sure about the performance.</p></dd>
 
 </dl></div>
     <div class="section level2">

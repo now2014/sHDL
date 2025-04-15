@@ -104,26 +104,31 @@ bim <- bim[, c(2, 1, 4)]
 colnames(bim) <- c('SNP', 'chrom', 'pos')
 
 ## match annotated variants ##
-gene2snp <- function(i, j){
-  cur.chrom <- gene.pos[j, 'chrom']
-  s <- gene.pos[j, 'start']
-  e <- gene.pos[j, 'end']
-  bim <- bim[bim$chrom == cur.chrom, ]
-  bim <- bim[bim$pos >= s & bim$pos <= e, ]
-  snps <- unique(c(i, bim$SNP))
-  nsnps <- length(snps)
-  if(j %% 1000 == 0) cat(sprintf(
-    '# of processed genes %d: # of annotated %d variants (%.2f%%) \n',
-    j, nsnps, nsnps/M*100
-  ))
-  return(snps)
+gene2snp <- function(gene.pos, bim, mc.cores=4){
+  map.gene <- function(i, gene.pos.chr, bim.chr){
+    s <- gene.pos.chr[i, 'start']
+    e <- gene.pos.chr[i, 'end']
+    return(bim.chr[bim.chr$pos >= s & bim.chr$pos <= e, ]$SNP)
+  }
+  chroms <- unique(bim$chrom)
+  all.snps <- c()
+  for(cur.chrom in chroms){
+    gene.pos.chr <- gene.pos[gene.pos$chrom == cur.chrom, ]
+    bim.chr <- bim[bim$chrom == cur.chrom, ]
+    snps <- parallel::mclapply(
+      seq_len(nrow(gene.pos.chr)), map.gene,
+      gene.pos.chr=gene.pos.chr, bim.chr=bim.chr,
+      mc.cores=mc.cores
+    )
+    snps <- unique(unlist(snps))
+    all.snps <- c(all.snps, snps)
+  }
+  return(all.snps)
 }
-M <- nrow(bim)
-snps <- Reduce(gene2snp, 1:nrow(gene.pos), init=c())
+snps <- gene2snp(gene.pos, bim, 4)
 
 ## create the annotation weights for sHDL ##
-D <- rep(1, length(snps))
-names(D) <- snps
+D <- matrix(1, nrow=length(snps), ncol=1, dimnames=list(snps, 'Top10.genes'))
 ```
 
 * Step 02. Run `sHDL` on this binary annotation with the birth weight GWAS summary statistics from `HDL`.
@@ -131,25 +136,20 @@ names(D) <- snps
 ```R
 data(gwas1.example, package='HDL')
 res <- sHDL::sHDL(
-  D, gwas1.example, LD.path, nthreads=4,
+  D, gwas1.example, LD.path, mc.cores=4,
   stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL
 )
 
-str(res)
-# List of 13
-#  $ time         : num 78.8
-#  $ fold         : num 1.3
-#  $ h2           : num 0.164
-#  $ intercept    : num 0.963
-#  $ fold.se      : num 0.105
-#  $ h2.se        : num 0.00546
-#  $ intercept.se : num 0.0107
-#  $ fold.p       : num 0.00374
-#  $ h2.p         : num 2.69e-198
-#  $ intercept.p  : num 0
-#  $ stepwise     : logi TRUE
-#  $ converged    : logi TRUE
-#  $ optim.message: chr "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+# print(knitr::kable(res))
+
+# |item             | estimation|        se|         p|note                                             |
+# |:----------------|----------:|---------:|---------:|:------------------------------------------------|
+# |time             | 60.7460063|        NA|        NA|seconds                                          |
+# |h2               |  0.1639165| 0.0054560| 0.0000000|total heritability                               |
+# |intercept        |  0.9632359| 0.0106590| 0.0000000|intercept                                        |
+# |fold.Top10.genes |  1.3037835| 0.1047777| 0.0037398|enrichment fold                                  |
+# |converged        |         NA|        NA|        NA|TRUE                                             |
+# |message          |         NA|        NA|        NA|CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL |
 ```
 
 ## Continuous annotation
@@ -214,14 +214,21 @@ In the context of continuous annotation, a normalization process should be emplo
   }
   M <- nrow(bim)
   snps.w <- Reduce(mapw, 1:nrow(gene.df), init=c())
+  D <- matrix(snps.w, ncol=1, dimnames = list(names(snps.w), 'raw.W'))
+  saveRDS(D, 'raw.W.rds')
   ```
 
 * Step 03. Check the weights of variants.
 
   ```R
-  summary(snps.w)
-  #    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  # 0.00000 0.02038 0.04425 0.06551 0.07747 1.65767 
+  summary(D)
+   #     raw.W        
+   # Min.   :0.00000  
+   # 1st Qu.:0.02038  
+   # Median :0.04425  
+   # Mean   :0.06551  
+   # 3rd Qu.:0.07747  
+   # Max.   :1.65767
   ```
 
 ### Min-max normalization
@@ -230,14 +237,21 @@ One straightforward normalization method involves min-max normalization, where t
 
 ```R
 LD.path <- 'UKB_array_SVD_eigen90_extraction'
-D.minmax <- sHDL:::normD(snps.w, LD.path, norm.method='minmax')
+D <- readRDS('raw.W.rds')
+colnames(D) <- 'raw.W.minmax'
+D.minmax <- sHDL:::normD(D, LD.path, norm.method='minmax')
 
-# Applied `minmax` weight nomalization on 121235 (39.424%) annotated variants.
-# The theoretical upper boundary for enrichment fold is 61.419.
+# Annotation name(s): [raw.W.minmax].
+# Applied `minmax` weight nomalization on [121235 (39.424%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [61.419].
 
 summary(D.minmax)
-#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 0.00000 0.00000 0.00000 0.01628 0.02030 1.00000 
+ #  raw.W.minmax    
+ # Min.   :0.00000
+ # 1st Qu.:0.00000
+ # Median :0.00000
+ # Mean   :0.01628
+ # 3rd Qu.:0.02030
+ # Max.   :1.00000
 ```
 
 Run `sHDL` with `minmax` normalization.
@@ -245,26 +259,20 @@ Run `sHDL` with `minmax` normalization.
 ```R
 LD.path <- 'UKB_array_SVD_eigen90_extraction'
 data(gwas1.example, package='HDL')
+D <- readRDS('raw.W.rds')
+colnames(D) <- 'raw.W.minmax'
 res <- sHDL::sHDL(
-  snps.w, gwas1.example, LD.path, nthreads=4,
+  D, gwas1.example, LD.path, mc.cores=4,
   stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL, norm.method='minmax'
 )
 
-str(res)
-# List of 13
-#  $ time         : num 64
-#  $ fold         : num 8.74
-#  $ h2           : num 0.164
-#  $ intercept    : num 0.963
-#  $ fold.se      : num 0.91
-#  $ h2.se        : num 0.00546
-#  $ intercept.se : num 0.0107
-#  $ fold.p       : num 1.72e-17
-#  $ h2.p         : num 2.69e-198
-#  $ intercept.p  : num 0
-#  $ stepwise     : logi TRUE
-#  $ converged    : logi TRUE
-#  $ optim.message: chr "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+# print(str(res))
+# 'data.frame':   6 obs. of  5 variables:
+#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W.minmax" ...
+#  $ estimation: num  56.354 0.164 0.963 8.741 NA ...
+#  $ se        : num  NA 0.00546 0.01066 0.90955 NA ...
+#  $ p         : num  NA 2.69e-198 0.00 1.72e-17 NA ...
+#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...
 ```
 
 ### Scaled normalization
@@ -273,14 +281,21 @@ Alternatively, another approach is to scale `sum(D)` to the number of annotated 
 
 ```R
 LD.path <- 'UKB_array_SVD_eigen90_extraction'
-D.scaled <- sHDL:::normD(snps.w, LD.path, norm.method='scaled')
+D <- readRDS('raw.W.rds')
+colnames(D) <- 'raw.W.scaled'
+D.scaled <- sHDL:::normD(D, LD.path, norm.method='scaled')
 
-# Applied `scaled` weight nomalization on 121235 (39.424%) annotated variants.
-# The theoretical upper boundary for enrichment fold is 2.537.
+# Annotation name(s): [raw.W.scaled].
+# Applied `scaled` weight nomalization on [121235 (39.424%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [2.537].
 
 summary(D.scaled)
-#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#  0.0000  0.0000  0.0000  0.3942  0.4916 24.2134 
+ #  raw.W.scaled    
+ # Min.   : 0.0000  
+ # 1st Qu.: 0.0000  
+ # Median : 0.0000  
+ # Mean   : 0.3942  
+ # 3rd Qu.: 0.4916  
+ # Max.   :24.2134 
 ```
 
 Run `sHDL` with `scaled` normalization.
@@ -288,26 +303,20 @@ Run `sHDL` with `scaled` normalization.
 ```R
 LD.path <- 'UKB_array_SVD_eigen90_extraction'
 data(gwas1.example, package='HDL')
+D <- readRDS('raw.W.rds')
+colnames(D) <- 'raw.W.scaled'
 res <- sHDL::sHDL(
-  snps.w, gwas1.example, LD.path, nthreads=4,
+  D, gwas1.example, LD.path, mc.cores=4,
   stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL, norm.method='scaled'
 )
 
-str(res)
-# List of 13
-#  $ time         : num 73
-#  $ fold         : num 1.2
-#  $ h2           : num 0.164
-#  $ intercept    : num 0.963
-#  $ fold.se      : num 0.0231
-#  $ h2.se        : num 0.00546
-#  $ intercept.se : num 0.0107
-#  $ fold.p       : num 1.73e-17
-#  $ h2.p         : num 2.69e-198
-#  $ intercept.p  : num 0
-#  $ stepwise     : logi TRUE
-#  $ converged    : logi TRUE
-#  $ optim.message: chr "CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH"
+# print(str(res))
+# 'data.frame':   6 obs. of  5 variables:
+#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W.scaled" ...
+#  $ estimation: num  64.204 0.164 0.963 1.197 NA ...
+#  $ se        : num  NA 0.00546 0.01066 0.02313 NA ...
+#  $ p         : num  NA 2.69e-198 0.00 1.73e-17 NA ...
+#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...
 ```
 
 ### No normalization
@@ -316,13 +325,20 @@ One can also choose to keep the original annotation weights without normalizatio
 
 ```R
 LD.path <- 'UKB_array_SVD_eigen90_extraction'
-D.none <- sHDL:::normD(snps.w, LD.path, norm.method='none')
+D <- readRDS('raw.W.rds')
+D.none <- sHDL:::normD(D, LD.path, norm.method='none')
 
-# No normalization applied on 121235 (39.424%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = 37.051.
+# Annotation name(s): [raw.W].
+# No normalization applied on [121235 (39.424%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [37.051].
 
 summary(D.none)
-#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 0.00000 0.00000 0.00000 0.02699 0.03366 1.65767 
+ #     raw.W        
+ # Min.   :0.00000  
+ # 1st Qu.:0.00000  
+ # Median :0.00000  
+ # Mean   :0.02699  
+ # 3rd Qu.:0.03366  
+ # Max.   :1.65767
 ```
 
 Run `sHDL` without annotation weights normalization.
@@ -330,25 +346,18 @@ Run `sHDL` without annotation weights normalization.
 ```R
 LD.path <- 'UKB_array_SVD_eigen90_extraction'
 data(gwas1.example, package='HDL')
+D <- readRDS('raw.W.rds')
 res <- sHDL::sHDL(
-  snps.w, gwas1.example, LD.path, nthreads=4,
+  D, gwas1.example, LD.path, mc.cores=4,
   stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL, norm.method='none'
 )
 
-str(res)
-# List of 13
-#  $ time         : num 70.8
-#  $ fold         : num 5.62
-#  $ h2           : num 0.164
-#  $ intercept    : num 0.963
-#  $ fold.se      : num 0.543
-#  $ h2.se        : num 0.00546
-#  $ intercept.se : num 0.0107
-#  $ fold.p       : num 1.73e-17
-#  $ h2.p         : num 2.69e-198
-#  $ intercept.p  : num 0
-#  $ stepwise     : logi TRUE
-#  $ converged    : logi TRUE
-#  $ optim.message: chr "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+# print(str(res))
+# 'data.frame':   6 obs. of  5 variables:
+#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W" ...
+#  $ estimation: num  63.831 0.164 0.963 5.619 NA ...
+#  $ se        : num  NA 0.00546 0.01066 0.54271 NA ...
+#  $ p         : num  NA 2.69e-198 0.00 1.73e-17 NA ...
+#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...
 ```
 

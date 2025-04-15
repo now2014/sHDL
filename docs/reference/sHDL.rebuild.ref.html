@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,7 @@
 
 
 <dt>lam.cut</dt>
-<dd><p>Eigenvalue cutoff for LD matrices, default <code>lam.cut = NULL</code>, which means the same cutoff in the original LD reference panel.</p></dd>
+<dd><p>Eigenvalue cutoff for LD matrices, default <code>lam.cut = NULL</code>, which means the same cutoff in the original LD reference panel. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.</p></dd>
 
 
 <dt>pattern</dt>

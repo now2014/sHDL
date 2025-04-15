@@ -1,0 +1,81 @@
+#' Maximize the log likelihood to infer the heritability enrichment folds jointly.
+#'
+#' @param Dr.path The path to the pre-computed \code{diag(Dr)} data, see also \code{\link{sHDL::sHDL.joint.reduct.dim}}.
+#' @param gwas.df A data frame including GWAS summary statistics of genetic variants for a trait.
+#' The input data frame should include following columns: SNP, SNP ID; A1, effect allele; A2, reference allele;
+#' N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b, estimate of marginal effect in GWAS; se, standard error of the estimates of marginal effects in GWAS.
+#' @param LD.path Path to the directory where linkage disequilibrium (LD) information is stored, compatible with HDL LD reference panels.
+#' @param output.file Where the log and results should be written. If you do not specify a file, the log will be printed on the console.
+#' @param annots A vector of annotation names, default \code{NULL}, which means all annotations in the \code{Dr.path} will be used.
+#' @param mc.cores Number of cores to use for parallelization, default \code{mc.cores = 1}.
+#' @param fill.missing.N If the sample size is missing in the GWAS summary statistics, \code{fill.missing.N} is used to fill the missing values.
+#' @param lim Tolerance limitation to ensure the positive-definiteness of covariance matrices, default \code{lim = exp(-18)}.
+#' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.
+#' @param verbose Whether to print the log on the console, default \code{verbose = FALSE}.
+#' @param fix.h2 Whether to fix the heritability to \code{fix.h2} or estimate the heritability, default \code{fix.h2 = NULL}, which means estimate the heritability.
+#' @param fix.intercept Whether to fix the intercept to \code{fix.intercept} or estimate the intercept, default \code{fix.intercept = NULL}, which means estimate the intercept.
+#' @param maxit Maximum number of iterations, default \code{maxit = 1000}.
+#' @param pgtol Tolerance for convergence, default \code{pgtol = 1e-3}.
+#' @param start.v Starting values for \code{c(h2, intercept, fold1, fold2, ..., foldn)}, where n is the number of annotations. Default is \code{NULL}, which means \code{c(0.1, 1, 1, ..., 1)}. If \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the starting values for \code{h2} or \code{intercept} will be ignored.
+#' @param lwr Lower bounds for \code{c(h2, intercept, fold1, fold2, ..., foldn)}. Default is \code{NULL}, which means \code{c(0, 0, 0, 0, ..., 0)}. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the lower bounds for \code{h2} or \code{intercept} will be ignored.
+#' @param upr Upper bounds for \code{c(h2, intercept, fold1, fold2, ..., foldn)}, default is \code{NULL}, which means \code{c(1, 5, M/Md_1, M/Md_2, ..., M/Md_n)}, where \code{Md_i} is the sum of the weights of the i-th annotation. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the upper bounds for \code{h2} or \code{intercept} will be ignored.
+#' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
+#' @param par.h2 Whether to estimate the partitioned heritability, default \code{par.h2 = FALSE}.
+#' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.
+#' @return  A list is returned with:
+#' \itemize{
+#' \item{item } The name of the parameter.
+#' \item{estimation } The estimated value of the parameter.
+#' \item{se } The standard error of the parameter.
+#' \item{p } The p-value of the parameter.
+#' \item{note } The note of the parameter.
+#' }
+#' @export
+#'
+#' @importFrom dplyr filter distinct
+#' @importFrom RhpcBLASctl blas_set_num_threads omp_set_num_threads
+
+sHDL.joint <- function(
+  Dr.path, gwas.df, LD.path,
+  output.file = NULL, annots = NULL, mc.cores = 1,
+  fill.missing.N = c("none", "min", "max", "median", "mean"),
+  lim = exp(-18), lam.cut = NULL, verbose = FALSE,
+  fix.h2 = NULL, fix.intercept = NULL, maxit=1000,
+  pgtol=1e-3, start.v = NULL, lwr=NULL, upr=NULL,
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", par.h2=FALSE, nthreads = 1){
+
+  if(!is.null(output.file)){
+    log.file <- paste0(output.file, ".log")
+    if(file.exists(log.file)) unlink(log.file)
+  }else{
+    log.file <- ""
+  }
+
+  sHDL:::log.msg("Starting sHDL analysis...\n", log.file)
+  gwas.df <- sHDL:::format.gwas(gwas.df, LD.path, fill.missing.N, log.file, pattern)
+  N <- median(gwas.df$N, na.rm=TRUE)
+  z <- gwas.df$Z
+  z <- matrix(z, ncol=1)
+  rownames(z) <- gwas.df$SNP
+
+  ref.data <- sHDL:::load.Dr(Dr.path, annots, lam.cut, log.file, pattern, mc.cores)
+  zr.data <- sHDL:::sHDL.reduct.dim(
+    LD.path, z=z, D=NULL, lam.cut=lam.cut,
+    nthreads=nthreads, pattern=pattern
+  )
+  for(i in seq_along(ref.data)){
+    ref.data[[i]]$zr <- zr.data[[i]]$zr
+  }
+
+  sHDL:::log.msg("Starting optimization...\n", log.file)
+  res <- sHDL:::sHDL.optim(
+    ref.data, N,
+    start.v=start.v,
+    output.file=output.file, log.file=log.file,
+    fix.h2=fix.h2, fix.intercept=fix.intercept,
+    lim=lim, verbose=verbose, lwr=lwr, upr=upr,
+    maxit=maxit, pgtol=pgtol, par.h2=par.h2,
+    mc.cores=mc.cores, nthreads=nthreads
+  )
+  return(res)
+}

@@ -117,19 +117,6 @@ list.LD.ref.files <- function(LD.path, suffix = ".rda", full.names = TRUE,
   return(segfiles)
 }
 
-#' @title read lam, M, Md from Dr.file
-#' @noRd
-#' @keywords internal
-read.lam <- function(refd){
-  lam <- refd$lam
-  M <- refd$M
-  Md <- refd$Md
-  if(is.null(lam) | is.null(Md) | is.null(M)){
-    load(refd$Dr)
-  }
-  return(list(lam=lam, M=M, Md=Md))
-}
-
 #' @title log likelihood function without enrichment fold parameter
 #' @noRd
 #' @keywords internal
@@ -148,37 +135,166 @@ log.lik.HDL <- function(param, lam, zr, N, M, lim=exp(-18), fix.intercept=NULL){
   return(lnL)
 }
 
-#' @title log likelihood function for piece
+#' @title log likelihood function for whole genome
 #' @noRd
 #' @keywords internal
-#' @importFrom RhpcBLASctl blas_set_num_threads omp_set_num_threads
-log.lik <- function(refd, h20, h2d, intercept,
-  N, M, Md, lim=exp(-18)){
-  zr <- refd$zr
-  Dr <- refd$Dr
-  lam <- refd$lam
-  if(length(Dr)==1 && is.character(Dr) && file.exists(Dr)){
-    e1 <- new.env()
-    load(Dr, envir = e1)
-    Dr <- e1$Dr
-    lam <- e1$lam
+log.lik.wg <- function(param, ref.data, Md, M, N,
+  log.file="", fix.h2=NULL, fix.intercept=NULL,
+  verbose=FALSE, lim=exp(-18), mc.cores=1, nthreads=1){
+  t0 <- Sys.time()
+
+  if(!is.null(fix.h2) && !is.null(fix.intercept)){
+    h2 <- fix.h2
+    intercept <- fix.intercept
+    folds <- param
+  }else if(!is.null(fix.h2)){
+    h2 <- fix.h2
+    intercept <- param[1]
+    folds <- param[-1]
+  }else if(!is.null(fix.intercept)){
+    intercept <- fix.intercept
+    h2 <- param[1]
+    folds <- param[-1]
+  }else{
+    h2 <- param[1]
+    intercept <- param[2]
+    folds <- param[-c(1, 2)]
   }
-  alpha <- intercept * lam + N*h20/M * lam**2
+  per.h2d <- (folds - 1) / (M - Md) * h2
+  per.h20 <- (h2 - sum(Md * per.h2d)) / M
+
+  if(mc.cores>1){
+    lnL <- parallel::mclapply(
+      ref.data, sHDL:::log.lik,
+      per.h20=per.h20, per.h2d=per.h2d, intercept=intercept,
+      N=N, lim=lim, nthreads=nthreads, mc.cores=mc.cores
+    )
+  }else{
+    lnL <- lapply(
+      ref.data, sHDL:::log.lik,
+      per.h20=per.h20, per.h2d=per.h2d, intercept=intercept,
+      N=N, lim=lim, nthreads=nthreads
+    )
+  }
+
+  lnL <- sum(as.numeric(unlist(lnL)))
+  time <- as.numeric(Sys.time() - t0, units="secs")
+  if(verbose){
+    folds <- paste0(round(folds, 3), collapse=", ")
+    msg <- sprintf(
+      "fold(s): %s h2: %.3f intercept: %.3f lnL: %.3f time: %.3f \n",
+      folds, h2, intercept, lnL, time
+    )
+    sHDL:::log.msg(msg, log.file)
+  }
+  return(lnL)
+}
+
+#' @title D normalization
+#' @noRd
+#' @keywords internal
+normD <- function(
+  D, LD.path, log.file="", norm.method=c("minmax", "scaled", "none"),
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
+
+  method <- match.arg(norm.method)
+  msg <- paste0('Annotation name(s): [', paste0(colnames(D), collapse = ', '), '].\n')
+  sHDL:::log.msg(msg, log.file)
+  bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim',
+    pattern=pattern, log.file=log.file)
+  bim <- do.call(rbind, lapply(
+    bim.files, read.table, header=F,
+    col.names=c('CHR', 'SNP', 'CM', 'POS', 'A1', 'A2')
+  ))
+  ref.snps <- bim$SNP
+  M <- nrow(bim)
+  dup.snps <- row.names(D)[duplicated(row.names(D))]
+  D <- D[setdiff(row.names(D), dup.snps), , drop=F] ## remove duplicates
+
+  int.snps <- intersect(ref.snps, row.names(D))
+  
+  
+  D <- D[int.snps, , drop=F]
+
+  msg.prefix <- sprintf('Applied `%s` weight nomalization', method)
+  minv <- apply(D, 2, min, na.rm=T)
+  if(method == "minmax"){
+    maxv <- apply(D, 2, max, na.rm=T)
+    D <- t((t(D) - minv) / (maxv - minv))
+    Md <- colSums(D, na.rm=T)
+  }else if(method == "scaled"){
+    minv[minv > 0] <- 0
+    D <- t(t(D) - minv)
+    Md <- colSums(D > 0, na.rm=T)
+    idx <- Md == M
+    if(sum(idx) >= 1){
+      minv <- apply(D, 2, min, na.rm=T)
+      D <- t(t(D) - minv, na.rm=T)
+      Md <- colSums(D > 0, na.rm=T)
+    }
+    D <- t(Md / colSums(D, na.rm=T) * t(D))
+  }else if(method=="none"){
+    if (sum(minv < 0) >= 1){
+      neg.anns <- paste0(names(minv)[minv < 0], collapse=',')
+      warn.msg <- sprintf("The annotation (%s) weights contain negative values, which may cause error (or bias) in the estimation.\n", neg.anns)
+      sHDL:::log.msg(warn.msg, log.file, type="warning")
+    }
+    msg.prefix <- 'No normalization applied'
+  }else{
+    err.msg <- "Unknown normalization method. Please choose one of 'minmax', 'scaled', 'none'.\n"
+    sHDL:::log.msg(err.msg, log.file, type="error")
+  }
+
+  Ma <- colSums(D != 0, na.rm=T)
+  Md <- colSums(D, na.rm=T)
+  upr <- paste0(sapply(M / Md, function(x) sprintf('%.3f', x)), collapse=', ')
+  cnt <- paste0(sapply(seq_along(Ma),
+    function(x) sprintf('%d (%.3f%%)', Ma[x], Ma[x]/M*100)), collapse=', ')
+  msg <- sprintf(
+    "%s on [%s] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [%s].\n",
+    msg.prefix, cnt, upr
+  )
+  sHDL:::log.msg(msg, log.file)
+
+  if(sum(Md/M > 0.9) >= 1){
+    warn.annots <- paste0(names(Md)[Md / M > 0.9], collapse=', ')
+    warn.msg <- sprintf("Upper boundary for the annotation [%s] is less than or very close to 1, please consider reducing the annotation density or using other normalization methods.\n", warn.annots)
+    sHDL:::log.msg(warn.msg, log.file, type="warning")
+  }
+
+  dD <- matrix(0, nrow=M, ncol=ncol(D), dimnames=(list(ref.snps, colnames(D))))
+  dD[int.snps, ] <- D[int.snps, ]
+  dD[is.na(dD)] <- 0
+  return(dD)
+}
+
+#' @title log likelihood function for joint optimization
+#' @noRd
+#' @keywords internal
+#' @importFrom RhpcBLASctl blas_set_num_threads
+#' @importFrom RhpcBLASctl omp_set_num_threads
+log.lik <- function(refd, per.h20, per.h2d, intercept,
+  N, lim = exp(-18), nthreads = 1){
+  RhpcBLASctl::blas_set_num_threads(nthreads)
+  RhpcBLASctl::omp_set_num_threads(nthreads)
+  zr <- refd$zr
+  lam <- refd$lam
+  
+  Dr <- sHDL:::sum.Dr(refd$Dr, per.h2d, length(lam))
+
+  alpha <- intercept * lam + N * per.h20 * lam**2
   alpha <- pmax(alpha, lim)
 
   if(length(Dr) == 1){
     Dr <- as.vector(Dr)
-    sigma <- alpha + N*h2d/Md * Dr
+    sigma <- alpha + N * Dr
     logdet <- log(sigma)
     quadra <- zr**2/sigma
     lnL <- -0.5 * (logdet + quadra)
     return(lnL)
   }
 
-  # use RhpcBLASctl to control the number of threads
-  blas_set_num_threads(1)
-  omp_set_num_threads(1)
-  sigma <- diag(alpha) + N*h2d/Md * Dr
+  sigma <- diag(alpha) + N * Dr
   L <- tryCatch({
     chol(sigma)
   }, error = function(e){
@@ -194,109 +310,236 @@ log.lik <- function(refd, h20, h2d, intercept,
   return(lnL)
 }
 
-#' @title log likelihood function for whole genome
+#' @title partitioned heritability estimation
 #' @noRd
 #' @keywords internal
-log.lik.wg <- function(param, ref.data, Md, M, N,
-  log.file="", h2=NULL, intercept=NULL, fold=NULL,
-  verbose=FALSE, lim=exp(-18), clust=NULL){
-  t0 <- Sys.time()
-
-  fold <- param[1]
-  if(is.null(h2)) h2 <- param[2]
-  if(is.null(intercept)) intercept <- param[3]
-
-  h2d <- Md*(fold-1)/(M - Md)*h2
-  h20 <- h2 - h2d
-
-  if(!is.null(clust)){
-    lnL <- parLapply(cl=clust, ref.data, sHDL:::log.lik,
-      N=N, M=M, Md=Md, h20=h20, h2d=h2d, intercept=intercept, lim=lim)
-  }else{
-    lnL <- lapply(ref.data, sHDL:::log.lik,
-      N=N, M=M, Md=Md, h20=h20, h2d=h2d, intercept=intercept, lim=lim)
+est.par.h2 <- function(h2, h2.se, folds, folds.se, cov.h2.folds, Mds, M){
+  if(length(folds) != length(Mds) || length(folds) != length(cov.h2.folds)){
+    sHDL:::log.msg('The length of folds, Mds and cov.h2.folds should be the same.\n', type='error')
   }
+  a <- Mds / M
 
-  lnL <- sum(unlist(lnL))
-  time <- as.numeric(Sys.time() - t0, units="secs")
-  if(verbose) sHDL:::log.msg(
-    sprintf(
-      "fold: %.3f h2: %.3f intercept: %.3f lnL: %.3f time: %.3f \n",
-      fold, h2, intercept, lnL, time),
-    log.file
-  )
-  return(lnL)
+  ph2 <- a * folds * h2
+  d.ph2.h2 <- a * folds
+  d.ph2.folds <- a * h2
+
+  v.h2 <- h2.se**2
+  v.folds <- folds.se**2
+  v.ph2 <- d.ph2.h2**2 * v.h2 + 
+    d.ph2.folds**2 * v.folds +
+    2 * d.ph2.h2 * d.ph2.folds * cov.h2.folds
+  v.ph2[v.ph2 < 0] <- NA
+  ph2.se <- sqrt(v.ph2)
+
+  return(list(ph2=ph2, ph2.se=ph2.se))
 }
 
-#' @title D normalization
+#' @title sum Dr
 #' @noRd
 #' @keywords internal
-normD <-function(
-  D, LD.path, log.file="", norm.method=c("minmax", "scaled", "none"),
-  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"){
-
-  method <- match.arg(norm.method)
-  bim.files <- sHDL:::list.LD.ref.files(LD.path, suffix='\\.bim',
-    pattern=pattern, log.file=log.file)
-  bim <- do.call(rbind, lapply(
-    bim.files, read.table, header=F,
-    col.names=c('CHR', 'SNP', 'CM', 'POS', 'A1', 'A2')
-  ))
-  ref.snps <- bim$SNP
-  M <- nrow(bim)
-  dup.snps <- names(D)[duplicated(names(D))]
-  D <- D[setdiff(names(D), dup.snps)] ## remove duplicates
-
-  int.snps <- intersect(ref.snps, names(D))
-  dD <- rep(0, M)
-  names(dD) <- ref.snps
-  dD[int.snps] <- D[int.snps]
-  dD[is.na(dD)] <- 0
-  D <- dD
-  minv <- min(D)
-
-  if(method == "minmax"){
-    maxv <- max(D)
-    D <- (D - minv)/(maxv - minv)
-    Md <- sum(D > 0)
-  }else if(method == "scaled"){
-    if(minv < 0){
-      D <- D - minv
+sum.Dr <- function(Dr, per.h2d, r){
+  idx <- seq_len(r)
+  if(length(per.h2d)==1){
+    cur.Dr <- Dr[[1]]
+    if(length(cur.Dr)==1 && is.character(cur.Dr) && file.exists(cur.Dr)){
+      e1 <- new.env()
+      load(cur.Dr, envir = e1)
+      cur.Dr <- e1$Dr
     }
-    Md <- sum(D > 0)
-    if(Md == M){
-      D <- D - min(D)
-    }
-    D <- Md / sum(D) * D
-  }else if(method=="none"){
-    if (minv < 0){
-      warn.msg <- "The annotation weights contain negative values, which may cause bias in the estimation.\n"
-      sHDL:::log.msg(warn.msg, log.file, type="warning")
-    }
-    Md <- sum(D != 0)
-    msg <- sprintf(
-      "No normalization applied on %d (%.3f%%) annotated variants. The theoretical upper boundary for enrichment fold is M / Md = %.3f.\n",
-      Md, Md/M*100, M/sum(D))
-    sHDL:::log.msg(msg, log.file)
-    return(D)
-  }else{
-    err.msg <- "Unknown normalization method. Please choose one of 'minmax', 'scaled', 'none'.\n"
-    sHDL:::log.msg(err.msg, log.file, type="error")}
-
-  msg <- sprintf("Applied `%s` weight nomalization on %d (%.3f%%) annotated variants.\n",
-    method, Md, Md/M*100)
-  msg <- sprintf("%sThe theoretical upper boundary for enrichment fold is M / Md = %.3f", msg, M/sum(D))
-  if(sum(D)/M > 0.9 && method == "scaled"){
-    warn.msg <- paste0(msg, ", which is very close to 1, please consider the `minmax` option or reducing the dense of annotations.\n")
-    msg <- NULL
-  }else if(sum(D)/M > 0.9){
-    warn.msg <- paste0(msg, ", which is very close to 1, please consider reducing the dense of annotations.\n")
-    msg <- NULL
-  }else{
-    msg <- paste0(msg, ".\n")
-    warn.msg <- NULL
+    return(cur.Dr[idx, idx, drop=F] * per.h2d)
   }
-  sHDL:::log.msg(msg, log.file)
-  sHDL:::log.msg(warn.msg, log.file, type="warning")
-  return(D)
+  sDr <- NULL
+  for(i in seq_along(per.h2d)){
+    cur.Dr <- Dr[[i]]
+    if(length(cur.Dr)==1 && is.character(cur.Dr) && file.exists(cur.Dr)){
+      e1 <- new.env()
+      load(cur.Dr, envir = e1)
+      cur.Dr <- e1$Dr
+    }
+    cur.Dr <- cur.Dr[idx, idx, drop=F] * per.h2d[i]
+    if(is.null(sDr)){
+      sDr <- cur.Dr
+    }else{
+      sDr <- sDr + cur.Dr
+    }
+  }
+  return(sDr)
+}
+
+#' @title load ref.data from Dr.path
+#' @noRd
+#' @keywords internal
+load.Dr <- function(Dr.path, kept.annots=NULL, lam.cut=NULL, log.file="",
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", mc.cores=1, mode=c("disk", "memory")){
+  if(!file.exists(Dr.path)){
+    err.msg <- sprintf("The file %s does not exist.\n", Dr.path)
+    sHDL:::log.msg(err.msg, log.file, type="error")
+  }
+  mode <- match.arg(mode)
+  Dr.path <- normalizePath(Dr.path)
+  annots <- list.dirs(Dr.path, full.names=FALSE, recursive=FALSE)
+  if(length(annots)==0 && is.null(kept.annots)){
+    annots <- basename(Dr.path)
+    Dr.path <- dirname(Dr.path)
+  }else if(!is.null(kept.annots)){
+    if(length(intersect(annots, kept.annots)) != length(kept.annots)){
+      err.msg <- sprintf("The required annotations %s are not found in the Dr.path %s.\n",
+        paste(setdiff(kept.annots, annots), collapse=", "), Dr.path)
+      sHDL:::log.msg(err.msg, log.file, type="error")
+    }
+    annots <- intersect(annots, kept.annots)
+  }
+
+  Dr.files <- sHDL:::list.LD.ref.files(file.path(Dr.path, annots[1]), suffix='.rda',
+    pattern=pattern, log.file=log.file)
+  Dr.files <- basename(Dr.files)
+  ref.data <- parallel::mclapply(
+    Dr.files, function(Dr.file, annots, Dr.path, lam.cut){
+      rda.files <- paste0(Dr.path, '/', annots, '/', Dr.file)
+      e1 <- new.env()
+      load(rda.files[1], envir = e1)
+      lam <- e1$lam
+      Mds <- e1$Md
+      M <- e1$M
+
+      if(!is.null(lam.cut)){
+        idx <- lam > lam.cut
+        if(sum(idx)==0) idx[1] <- TRUE
+        lam <- lam[idx]
+      }
+      idx <- seq_len(length(lam))
+
+      Dr <- as.list(paste0(Dr.path, '/', annots, '/', Dr.file))
+      names(Dr) <- annots
+      if(mode=='memory') Dr[[1]] <- e1$Dr[idx, idx, drop=F]
+      if(length(rda.files) == 1){
+        names(Mds) <- annots
+        return(list(Dr=Dr, lam=lam, Md=Mds, M=M))
+      }
+      for(j in seq(2, length(rda.files))){
+        e1 <- new.env()
+        load(rda.files[j], envir = e1)
+        Mds <- c(Mds, e1$Md)
+        if(mode=='memory') Dr[[j]] <- e1$Dr[idx, idx, drop=F]
+      }
+      names(Mds) <- annots
+      return(list(Dr=Dr, lam=lam, Md=Mds, M=M))
+    }, annots=annots, Dr.path=Dr.path, lam.cut=lam.cut, mc.cores=mc.cores
+  )
+  return(ref.data)
+}
+
+
+#' @title subset D or z matrix
+#' @noRd
+#' @keywords internal
+subset.zD <- function(V, zD){
+  snps.ref <- row.names(V)
+  sub.zD <- matrix(0, nrow=nrow(V), ncol=ncol(zD))
+  row.names(sub.zD) <- snps.ref
+  colnames(sub.zD) <- colnames(zD)
+  int.snps <- intersect(snps.ref, row.names(zD))
+  sub.zD[int.snps,] <- zD[int.snps,]
+  sub.zD[is.na(sub.zD)] <- 0
+  sub.zD[!is.finite(sub.zD)] <- 0
+  return(sub.zD)
+}
+
+
+#' @title transfrom z and D to zr and Dr
+#' @noRd
+#' @keywords internal
+trans.zD <- function(
+  LD.file,
+  Dr.path=NULL, z=NULL, D=NULL, lam.cut=NULL,
+  mode=c("disk", "memory"), overwrite=FALSE, log.file="", nthreads=1){
+
+  RhpcBLASctl::blas_set_num_threads(nthreads)
+  RhpcBLASctl::omp_set_num_threads(nthreads)
+  mode <- match.arg(mode)
+  if(!is.null(D) && is.null(Dr.path)){
+    Dr.path <- "./sHDL_Dr"
+    msg <- sprintf(
+      "D is not NULL and Dr.path is not provided. The default path %s will be used.\n",
+      Dr.path
+    )
+    sHDL:::log.msg(msg, log.file)
+  }
+
+  load(LD.file) # V, lam, LDsc
+  if(exists('U') && !exists('V')){
+    V <- U
+    rm('U')
+  }
+  if(!is.null(lam.cut)){
+    idx <- lam > lam.cut
+    if(sum(idx)==0) idx[1] <- TRUE
+    V <- V[,idx]
+    lam <- lam[idx]
+  }
+  snps.ref <- row.names(V)
+  M <- length(snps.ref)
+
+  zr <- NULL
+  ## convert z to zr
+  if(!is.null(z)) zr <- crossprod(V, sHDL:::subset.zD(V, z))
+
+  if(!is.null(D)){
+    if(!dir.exists(Dr.path)) dir.create(Dr.path, recursive=TRUE)
+    D <- sHDL:::subset.zD(V, D) ## subset D to reference panel
+    Mds <- colSums(D)
+    names(Mds) <- colnames(D)
+    M <- nrow(D)
+    annots <- colnames(D)
+    Dr.files <- paste0(Dr.path, '/', annots, '/', basename(LD.file))
+    names(Dr.files) <- annots
+    for(i in seq_along(annots)){
+      annot <- annots[i]
+      Dr.file <- Dr.files[i]
+      if(!dir.exists(dirname(Dr.file))) dir.create(dirname(Dr.file), recursive=TRUE)
+      if(!file.exists(Dr.file) || overwrite){
+        ## save Dr to disk
+        Dr <- diag(lam) %*% t(V) %*% diag(D[, i, drop=TRUE]) %*% V %*% diag(lam)
+        Md <- Mds[annot]
+        save(Dr, lam, Md, M, file=Dr.file)
+      }
+    }
+  }
+
+  if(is.null(D) && !is.null(Dr.path)){
+    annots <- list.dirs(Dr.path, full.names=FALSE, recursive=FALSE)
+    if(length(annots)==0){
+      annots <- basename(Dr.path)
+      Dr.path <- dirname(normalizePath(Dr.path))
+    }
+    Dr.files <- paste0(Dr.path, '/', annots, '/', basename(LD.file))
+    names(Dr.files) <- annots
+  }
+
+  ref.d <- list(
+    Dr=NULL,
+    lam=lam,
+    Md=NULL,
+    M=M,
+    zr=NULL
+  )
+  if(!is.null(zr)){
+    ref.d$zr <- zr
+  }
+  if(!is.null(D) || !is.null(Dr.path)){
+    ref.d$Dr <- as.list(Dr.files)
+
+    Mds <- c()
+    for(i in seq_len(length(ref.d$Dr))){
+      e1 <- new.env()
+      load(ref.d$Dr[[i]], envir = e1)
+      if(mode=="memory") ref.d$Dr[[i]] <- e1$Dr
+      Mds <- c(Mds, e1$Md)
+    }
+    names(Mds) <- names(ref.d$Dr)
+    ref.d$Md <- Mds
+    ref.d$M <- e1$M
+  }
+
+  return(ref.d)
 }

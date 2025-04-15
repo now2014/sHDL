@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,7 +80,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Example of sHDL</h1>
             
-            <h4 data-toc-skip class="date">2024-06-05</h4>
+            <h4 data-toc-skip class="date">2025-04-15</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/now2014/sHDL/blob/main/vignettes/Example.Rmd" class="external-link"><code>vignettes/Example.Rmd</code></a></small>
       <div class="d-none name"><code>Example.Rmd</code></div>
@@ -212,7 +212,7 @@ based on the gene locations (hg19).</p>
 <li>
 <p>Step 01. Download the gene location information from
 <code>GeneBreak</code> package.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-c</span> https://code.bioconductor.org/browse/GeneBreak/blob/RELEASE_3_18/data/ens.gene.ann.hg19.rda</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">wget</span> <span class="at">-c</span> https://raw.githubusercontent.com/stefvanlieshout/GeneBreak/master/data/ens.gene.ann.hg19.rda</span></code></pre></div>
 </li>
 <li>
 <p>Step 02. Create a binary annotation of all genes.</p>
@@ -236,26 +236,31 @@ based on the gene locations (hg19).</p>
 <span></span>
 <span></span>
 <span><span class="co">## match annotated variants ##</span></span>
-<span><span class="va">gene2snp</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">j</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">cur.chrom</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">j</span>, <span class="st">'chrom'</span><span class="op">]</span></span>
-<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">j</span>, <span class="st">'start'</span><span class="op">]</span></span>
-<span>  <span class="va">e</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">j</span>, <span class="st">'end'</span><span class="op">]</span></span>
-<span>  <span class="va">bim</span> <span class="op">&lt;-</span> <span class="va">bim</span><span class="op">[</span><span class="va">bim</span><span class="op">$</span><span class="va">chrom</span> <span class="op">==</span> <span class="va">cur.chrom</span>, <span class="op">]</span></span>
-<span>  <span class="va">bim</span> <span class="op">&lt;-</span> <span class="va">bim</span><span class="op">[</span><span class="va">bim</span><span class="op">$</span><span class="va">pos</span> <span class="op">&gt;=</span> <span class="va">s</span> <span class="op">&amp;</span> <span class="va">bim</span><span class="op">$</span><span class="va">pos</span> <span class="op">&lt;=</span> <span class="va">e</span>, <span class="op">]</span></span>
-<span>  <span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">i</span>, <span class="va">bim</span><span class="op">$</span><span class="va">SNP</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">nsnps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span><span class="op">(</span><span class="va">j</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">1000</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
-<span>    <span class="st">'# of processed genes %d: # of annotated %d variants (%.2f%%) \n'</span>,</span>
-<span>    <span class="va">j</span>, <span class="va">nsnps</span>, <span class="va">nsnps</span><span class="op">/</span><span class="va">M</span><span class="op">*</span><span class="fl">100</span></span>
-<span>  <span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span></span>
+<span><span class="va">gene2snp</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">gene.pos</span>, <span class="va">bim</span>, <span class="va">mc.cores</span><span class="op">=</span><span class="fl">4</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">map.gene</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">gene.pos.chr</span>, <span class="va">bim.chr</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">gene.pos.chr</span><span class="op">[</span><span class="va">i</span>, <span class="st">'start'</span><span class="op">]</span></span>
+<span>    <span class="va">e</span> <span class="op">&lt;-</span> <span class="va">gene.pos.chr</span><span class="op">[</span><span class="va">i</span>, <span class="st">'end'</span><span class="op">]</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">bim.chr</span><span class="op">[</span><span class="va">bim.chr</span><span class="op">$</span><span class="va">pos</span> <span class="op">&gt;=</span> <span class="va">s</span> <span class="op">&amp;</span> <span class="va">bim.chr</span><span class="op">$</span><span class="va">pos</span> <span class="op">&lt;=</span> <span class="va">e</span>, <span class="op">]</span><span class="op">$</span><span class="va">SNP</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">bim</span><span class="op">$</span><span class="va">chrom</span><span class="op">)</span></span>
+<span>  <span class="va">all.snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span><span class="op">(</span><span class="va">cur.chrom</span> <span class="kw">in</span> <span class="va">chroms</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">gene.pos.chr</span> <span class="op">&lt;-</span> <span class="va">gene.pos</span><span class="op">[</span><span class="va">gene.pos</span><span class="op">$</span><span class="va">chrom</span> <span class="op">==</span> <span class="va">cur.chrom</span>, <span class="op">]</span></span>
+<span>    <span class="va">bim.chr</span> <span class="op">&lt;-</span> <span class="va">bim</span><span class="op">[</span><span class="va">bim</span><span class="op">$</span><span class="va">chrom</span> <span class="op">==</span> <span class="va">cur.chrom</span>, <span class="op">]</span></span>
+<span>    <span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">mclapply</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gene.pos.chr</span><span class="op">)</span><span class="op">)</span>, <span class="va">map.gene</span>,</span>
+<span>      gene.pos.chr<span class="op">=</span><span class="va">gene.pos.chr</span>, bim.chr<span class="op">=</span><span class="va">bim.chr</span>,</span>
+<span>      mc.cores<span class="op">=</span><span class="va">mc.cores</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">all.snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">all.snps</span>, <span class="va">snps</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">all.snps</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">bim</span><span class="op">)</span></span>
-<span><span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Reduce</a></span><span class="op">(</span><span class="va">gene2snp</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gene.pos</span><span class="op">)</span>, init<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">snps</span> <span class="op">&lt;-</span> <span class="fu">gene2snp</span><span class="op">(</span><span class="va">gene.pos</span>, <span class="va">bim</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## create the annotation weights for sHDL ##</span></span>
-<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">snps</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">snps</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">1</span>, dimnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">snps</span>, <span class="st">'ENS.gene'</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">D</span>, file<span class="op">=</span><span class="st">'D.rds'</span><span class="op">)</span> <span class="co"># save the annotation weights for sHDL</span></span></code></pre></div>
 </li>
@@ -277,102 +282,102 @@ and set the weights of missing variants in the LD reference panel to
 <span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">'D.rds'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">t0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">::</span><span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas.df</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, mode<span class="op">=</span><span class="st">'memory'</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="fu">::</span><span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas.df</span>, <span class="va">LD.path</span>, mc.cores<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, mode<span class="op">=</span><span class="st">'memory'</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">t0</span><span class="op">)</span></span></code></pre></div>
-<p>sHDL will finish in <strong>~3 mins</strong> with 4 CPU cores.</p>
+<p>sHDL will finish in <strong>~2 mins</strong> with 4 CPU cores.</p>
 <p>Down below message in the console during the analysis (birth weight
 from <code>HDL</code>) :</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="ex">Formating</span> GWAS summary statistics ...</span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="ex">307519</span> out of 307519 <span class="er">(</span><span class="ex">100%</span><span class="kw">)</span> <span class="ex">SNPs</span> in reference panel are available in the GWAS.  </span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="ex">Converting</span> z <span class="er">(</span><span class="ex">D</span><span class="kw">)</span> <span class="ex">to</span> zr <span class="er">(</span><span class="ex">Dr</span><span class="kw">)</span> <span class="ex">...</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="ex">Applied</span> <span class="kw">`</span><span class="ex">minmax</span><span class="kw">`</span> weight nomalization on 147849 <span class="er">(</span><span class="ex">48.078%</span><span class="kw">)</span> <span class="ex">annotated</span> variants.</span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="ex">The</span> theoretical upper boundary for enrichment fold is 2.080.</span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="ex">Optimizing</span> ...</span>
-<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a></span>
-<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="ex">Optimization</span> done in 63.731 seconds.</span>
-<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a></span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="bu">time</span>    63.7308533191681</span>
-<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="fu">fold</span>    1.27398058787877</span>
-<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="ex">h2</span>      0.16391651163241</span>
-<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="ex">intercept</span>       0.963235890727237</span>
-<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="ex">fold.se</span> 0.0259721362117597</span>
-<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="ex">h2.se</span>   0.00545604327753226</span>
-<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="ex">intercept.se</span>    0.0106589577723641</span>
-<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="ex">fold.p</span>  5.13295973147164e-26</span>
-<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a><span class="ex">h2.p</span>    2.68604947190569e-198</span>
-<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="ex">intercept.p</span>     0</span>
-<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a><span class="ex">stepwise</span>        TRUE</span>
-<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="ex">converged</span>       TRUE</span>
-<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="ex">optim.message</span>   CONVERGENCE: NORM OF PROJECTED GRADIENT <span class="op">&lt;</span>= PGTOL</span>
-<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a><span class="ex">Time</span> difference of 2.521161 mins</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="ex">Starting</span> sHDL analysis...</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="ex">307519</span> out of 307519 <span class="er">(</span><span class="ex">100.00%</span><span class="kw">)</span> <span class="ex">SNPs</span> in reference panel are available in the GWAS.</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="ex">Transfoming</span> z <span class="er">(</span><span class="ex">D</span><span class="kw">)</span> <span class="ex">to</span> zr <span class="er">(</span><span class="ex">Dr</span><span class="kw">)</span><span class="ex">...</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="ex">D</span> is not NULL and Dr.path is not provided. The default path ./sHDL_Dr will be used.</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="ex">Applied</span> <span class="kw">`</span><span class="ex">minmax</span><span class="kw">`</span> weight nomalization on 147849 <span class="er">(</span><span class="ex">48.078%</span><span class="kw">)</span> <span class="ex">annotated</span> variants.</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="ex">The</span> theoretical upper boundary for enrichment fold is M / Md = 2.080.</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="ex">Starting</span> optimization...</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="ex">Optimization</span> done in 52.539 seconds.</span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="ex">item</span>    estimation      se      p       note</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="bu">time</span>    52.5394132137299        NA      NA      seconds</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="ex">h2</span>      0.16391651163241        0.00545604327753226     2.68604947190574e-198   total heritability</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="ex">intercept</span>       0.963235890727237       0.0106589577723641      0       intercept</span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="ex">fold.ENS.gene</span>   1.2739805907671 0.0259721362754955      5.13295507071105e-26    enrichment fold</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="ex">converged</span>       NA      NA      NA      TRUE</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="ex">message</span> NA      NA      NA      CONVERGENCE: NORM OF PROJECTED GRADIENT <span class="op">&lt;</span>= PGTOL</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="ex">Time</span> difference of 2.185567 mins</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="results-of-shdl">Results of sHDL<a class="anchor" aria-label="anchor" href="#results-of-shdl"></a>
 </h2>
 <table class="table">
 <colgroup>
-<col width="17%">
-<col width="82%">
+<col width="14%">
+<col width="11%">
+<col width="10%">
+<col width="15%">
+<col width="49%">
 </colgroup>
 <thead><tr class="header">
-<th>Item</th>
-<th>Description</th>
+<th align="left">item</th>
+<th align="right">estimation</th>
+<th align="right">se</th>
+<th align="right">p</th>
+<th align="left">note</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>time</td>
-<td>Optimization time for sHDL, <strong>NOT</strong> including the time
-for converting z (D) to zr (Dr).</td>
+<td align="left">time</td>
+<td align="right">52.5394132</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">seconds</td>
 </tr>
 <tr class="even">
-<td>fold</td>
-<td>Estimation for heritability enrichment fold.</td>
+<td align="left">h2</td>
+<td align="right">0.1639165</td>
+<td align="right">0.0054560</td>
+<td align="right">2.686049e-198</td>
+<td align="left">total heritability</td>
 </tr>
 <tr class="odd">
-<td>h2</td>
-<td>Estimation for heritability.</td>
+<td align="left">intercept</td>
+<td align="right">0.9632359</td>
+<td align="right">0.0106590</td>
+<td align="right">0.000000e+00</td>
+<td align="left">intercept</td>
 </tr>
 <tr class="even">
-<td>intercept</td>
-<td>Estimation for intercept.</td>
+<td align="left">fold.ENS.gene</td>
+<td align="right">1.2739806</td>
+<td align="right">0.0259721</td>
+<td align="right">5.132955e-26</td>
+<td align="left">enrichment fold</td>
 </tr>
 <tr class="odd">
-<td>fold.se</td>
-<td>Standard error of estimation for heritability enrichment fold.</td>
+<td align="left">converged</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">TRUE</td>
 </tr>
 <tr class="even">
-<td>h2.se</td>
-<td>Standard error of estimation for heritability.</td>
-</tr>
-<tr class="odd">
-<td>intercept.se</td>
-<td>Standard error of estimation for intercept.se.</td>
-</tr>
-<tr class="even">
-<td>fold.p</td>
-<td>P-value of estimation for heritability enrichment fold.</td>
-</tr>
-<tr class="odd">
-<td>h2.p</td>
-<td>P-value of estimation for heritability.</td>
-</tr>
-<tr class="even">
-<td>stepwise</td>
-<td>Input <code>stepwise</code> parameter.</td>
-</tr>
-<tr class="odd">
-<td>converged</td>
-<td>Whether the optimization converges or not.</td>
-</tr>
-<tr class="even">
-<td>optim.message</td>
-<td>The optimization message returned by <code>optim</code> function in
-<code>R</code>.</td>
+<td align="left">message</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;=
+PGTOL</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Notice</strong>:</p>
+<ul>
+<li>The item <code>time</code> only indicates the time for maximizing
+log likelihood, <strong>NOT</strong> including the time for converting z
+(D) to zr (Dr).</li>
+<li>The <strong>null hypothesis</strong> of <code>p</code> value for the
+fold parameter is <span class="math inline">\(fold \ne 1\)</span>,
+<strong>NOT</strong> <span class="math inline">\(fold &gt;
+1\)</span>.</li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

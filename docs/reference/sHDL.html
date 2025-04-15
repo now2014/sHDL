@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,7 @@
 <span>  <span class="va">gwas.df</span>,</span>
 <span>  <span class="va">LD.path</span>,</span>
 <span>  output.file <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  nthreads <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  mc.cores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  stepwise <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  fill.missing.N <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"min"</span>, <span class="st">"max"</span>, <span class="st">"median"</span>, <span class="st">"mean"</span><span class="op">)</span>,</span>
 <span>  lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">18</span><span class="op">)</span>,</span>
@@ -74,19 +74,21 @@
 <span>  fix.intercept <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maxit <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  pgtol <span class="op">=</span> <span class="fl">0.001</span>,</span>
-<span>  start.v <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  start.v <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  lwr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  upr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"disk"</span>, <span class="st">"memory"</span><span class="op">)</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="st">".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"</span>,</span>
-<span>  norm.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minmax"</span>, <span class="st">"scaled"</span>, <span class="st">"none"</span><span class="op">)</span></span>
+<span>  norm.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minmax"</span>, <span class="st">"scaled"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
+<span>  par.h2 <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  nthreads <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>D</dt>
-<dd><p>A vector of genomic annotations with vector names of SNP IDs.</p></dd>
+<dd><p>A single-column matrix of annotation weights with rownames of SNP IDs and colname specifying the annotation name. Must have exactly one column.</p></dd>
 
 
 <dt>gwas.df</dt>
@@ -103,8 +105,8 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 <dd><p>Where the log and results should be written. If you do not specify a file, the log will be printed on the console.</p></dd>
 
 
-<dt>nthreads</dt>
-<dd><p>Number of threads to use, default <code>nthreads = 1</code>.</p></dd>
+<dt>mc.cores</dt>
+<dd><p>Number of cores to use for parallelization, default <code>mc.cores = 1</code>.</p></dd>
 
 
 <dt>stepwise</dt>
@@ -120,7 +122,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 
 <dt>lam.cut</dt>
-<dd><p>Eigenvalue cutoff for LD matrices, default <code>lam.cut = NULL</code>, which means no cutoff.</p></dd>
+<dd><p>Eigenvalue cutoff for LD matrices, default <code>lam.cut = NULL</code>, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.</p></dd>
 
 
 <dt>Dr.path</dt>
@@ -152,19 +154,19 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 
 <dt>start.v</dt>
-<dd><p>A vector of starting values <code>c(fold, h2, intercept)</code> for optimization.</p></dd>
+<dd><p>A vector of starting values <code>c(h2, intercept, fold)</code> for optimization.</p></dd>
 
 
 <dt>lwr</dt>
-<dd><p>Lower bounds for <code>c(fold, h2, intercept)</code>. Default is <code>NULL</code>, which means <code>c(0, 0, 0.1)</code>.</p></dd>
+<dd><p>Lower bounds for <code>c(h2, intercept, fold)</code>. Default is <code>NULL</code>, which means <code>c(0, 0.1, 0)</code>.</p></dd>
 
 
 <dt>upr</dt>
-<dd><p>Upper bounds for <code>c(fold, h2, intercept)</code>. Default is <code>NULL</code>, which means <code>c(M / Md, 1, 5)</code>, where <code>Md</code> is the sum of annotation weights and <code>M</code> is the total number of SNPs.</p></dd>
+<dd><p>Upper bounds for <code>c(h2, intercept, fold)</code>. Default is <code>NULL</code>, which means <code>c(1, 5, M / Md)</code>, where <code>Md</code> is the sum of annotation weights and <code>M</code> is the total number of SNPs.</p></dd>
 
 
 <dt>mode</dt>
-<dd><p>Whether to store Dr to disk or memory, default <code>mode = "disk"</code>. If <code>mode = "disk"</code>, <code>Dr</code> is stored to disk (path returned only) and lam are not returned. If <code>mode = "memory"</code>, <code>Dr</code> and <code>lam</code> are returned.</p></dd>
+<dd><p>If <code>mode = "disk"</code>, <code>Dr</code> is stored to disk (path returned only). If <code>mode = "memory"</code>, <code>Dr</code> is loaded to memory (matrix returned). Default is <code>mode = "disk"</code>.</p></dd>
 
 
 <dt>pattern</dt>
@@ -173,6 +175,14 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 <dt>norm.method</dt>
 <dd><p>The normalization method, either <code>"minmax"</code> (default), <code>"scaled"</code> or <code>"none"</code>. If <code>"minmax"</code>, the annotation weight vector <code>D</code> is normalized to [0, 1]. If <code>"scaled"</code>, the sum of normalized vector <code>D</code> is scaled to the number of annotated SNPs. If <code>"none"</code>, the annotation weight vector <code>D</code> is not normalized.</p></dd>
+
+
+<dt>par.h2</dt>
+<dd><p>Whether to estimate the partitioned heritability, default <code>par.h2 = FALSE</code>.</p></dd>
+
+
+<dt>nthreads</dt>
+<dd><p>Number of threads to use for matrix operations, default <code>nthreads = 1</code>. The default value is suitable for most cases, do not change it unless you are sure about the performance.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -192,6 +202,9 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 <li><p>stepwise Whether the optimization is done in a stepwise manner.</p></li>
 <li><p>converged Whether the optimization converges.</p></li>
 <li><p>message The message returned by <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a></code>.</p></li>
+</ul><p>If <code>par.h2 = TRUE</code>, the following additional items are returned:</p><ul><li><p>par.h2 The estimated partitioned heritability.</p></li>
+<li><p>par.h2.se The standard error of the estimated partitioned heritability.</p></li>
+<li><p>par.h2.p P-value based on Wald test for the estimated partitioned heritability.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -219,14 +232,15 @@ then this HapMap2 panel is more proper to be used for HDL.
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gwas1.example</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">M</span>, <span class="fl">1</span>, <span class="fl">0.01</span><span class="op">)</span> <span class="co"># random D vector</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">gwas1.example</span><span class="op">$</span><span class="va">SNP</span></span></span>
+<span class="r-in"><span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">M</span>, <span class="fl">1</span>, <span class="fl">0.01</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="co"># random D vector</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">gwas1.example</span><span class="op">$</span><span class="va">SNP</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'testAnno'</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## The path to the directory where linkage disequilibrium (LD) information is stored.</span></span></span>
 <span class="r-in"><span><span class="va">LD.path</span> <span class="op">&lt;-</span> <span class="st">"path/to/UKB_array_SVD_eigen90_extraction"</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## To speed up the test, we set a large lam.cut value.</span></span></span>
-<span class="r-in"><span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, nthreads<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">10</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, mode<span class="op">=</span><span class="st">"memory"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu">sHDL</span><span class="op">(</span><span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path</span>, mc.cores<span class="op">=</span><span class="fl">4</span>, stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">10</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, mode<span class="op">=</span><span class="st">"memory"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res.sHDL</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>

@@ -142,7 +142,7 @@ In this example, we will create a binary annotation of all genes based on the ge
 * Step 01. Download the gene location information from `GeneBreak` package.
 
   ```bash
-  wget -c https://code.bioconductor.org/browse/GeneBreak/blob/RELEASE_3_18/data/ens.gene.ann.hg19.rda
+  wget -c https://raw.githubusercontent.com/stefvanlieshout/GeneBreak/master/data/ens.gene.ann.hg19.rda
   ```
 
 * Step 02. Create a binary annotation of all genes.
@@ -167,26 +167,31 @@ In this example, we will create a binary annotation of all genes based on the ge
   
   
   ## match annotated variants ##
-  gene2snp <- function(i, j){
-    cur.chrom <- gene.pos[j, 'chrom']
-    s <- gene.pos[j, 'start']
-    e <- gene.pos[j, 'end']
-    bim <- bim[bim$chrom == cur.chrom, ]
-    bim <- bim[bim$pos >= s & bim$pos <= e, ]
-    snps <- unique(c(i, bim$SNP))
-    nsnps <- length(snps)
-    if(j %% 1000 == 0) cat(sprintf(
-      '# of processed genes %d: # of annotated %d variants (%.2f%%) \n',
-      j, nsnps, nsnps/M*100
-    ))
-    return(snps)
+  gene2snp <- function(gene.pos, bim, mc.cores=4){
+    map.gene <- function(i, gene.pos.chr, bim.chr){
+      s <- gene.pos.chr[i, 'start']
+      e <- gene.pos.chr[i, 'end']
+      return(bim.chr[bim.chr$pos >= s & bim.chr$pos <= e, ]$SNP)
+    }
+    chroms <- unique(bim$chrom)
+    all.snps <- c()
+    for(cur.chrom in chroms){
+      gene.pos.chr <- gene.pos[gene.pos$chrom == cur.chrom, ]
+      bim.chr <- bim[bim$chrom == cur.chrom, ]
+      snps <- parallel::mclapply(
+        seq_len(nrow(gene.pos.chr)), map.gene,
+        gene.pos.chr=gene.pos.chr, bim.chr=bim.chr,
+        mc.cores=mc.cores
+      )
+      snps <- unique(unlist(snps))
+      all.snps <- c(all.snps, snps)
+    }
+    return(all.snps)
   }
-  M <- nrow(bim)
-  snps <- Reduce(gene2snp, 1:nrow(gene.pos), init=c())
+  snps <- gene2snp(gene.pos, bim, 4)
   
   ## create the annotation weights for sHDL ##
-  D <- rep(1, length(snps))
-  names(D) <- snps
+  D <- matrix(1, nrow=length(snps), ncol=1, dimnames=list(snps, 'ENS.gene'))
   
   saveRDS(D, file='D.rds') # save the annotation weights for sHDL
   ```
@@ -203,56 +208,45 @@ gwas.df <- readRDS('gwas.df.rds')
 D <- readRDS('D.rds')
 
 t0 <- Sys.time()
-res <- sHDL::sHDL(D, gwas.df, LD.path, nthreads=4, stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL)
+res <- sHDL::sHDL(D, gwas.df, LD.path, mc.cores=4, stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL)
 print(Sys.time() - t0)
 ```
 
-sHDL will finish in **~3 mins** with 4 CPU cores.
+sHDL will finish in **~2 mins** with 4 CPU cores.
 
 Down below message in the console during the analysis (birth weight from `HDL`) :
 
 ```bash
-Formating GWAS summary statistics ...
-
-307519 out of 307519 (100%) SNPs in reference panel are available in the GWAS.  
-Converting z (D) to zr (Dr) ...
-
+Starting sHDL analysis...
+307519 out of 307519 (100.00%) SNPs in reference panel are available in the GWAS.
+Transfoming z (D) to zr (Dr)...
+D is not NULL and Dr.path is not provided. The default path ./sHDL_Dr will be used.
 Applied `minmax` weight nomalization on 147849 (48.078%) annotated variants.
-The theoretical upper boundary for enrichment fold is 2.080.
-Optimizing ...
-
-Optimization done in 63.731 seconds.
-
-time    63.7308533191681
-fold    1.27398058787877
-h2      0.16391651163241
-intercept       0.963235890727237
-fold.se 0.0259721362117597
-h2.se   0.00545604327753226
-intercept.se    0.0106589577723641
-fold.p  5.13295973147164e-26
-h2.p    2.68604947190569e-198
-intercept.p     0
-stepwise        TRUE
-converged       TRUE
-optim.message   CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
-Time difference of 2.521161 mins
+The theoretical upper boundary for enrichment fold is M / Md = 2.080.
+Starting optimization...
+Optimization done in 52.539 seconds.
+item    estimation      se      p       note
+time    52.5394132137299        NA      NA      seconds
+h2      0.16391651163241        0.00545604327753226     2.68604947190574e-198   total heritability
+intercept       0.963235890727237       0.0106589577723641      0       intercept
+fold.ENS.gene   1.2739805907671 0.0259721362754955      5.13295507071105e-26    enrichment fold
+converged       NA      NA      NA      TRUE
+message NA      NA      NA      CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
+Time difference of 2.185567 mins
 ```
 
 ## Results of sHDL
 
-| Item          | Description                                                  |
-| ------------- | ------------------------------------------------------------ |
-| time          | Optimization time for sHDL, **NOT** including the time for converting z (D) to zr (Dr). |
-| fold          | Estimation for heritability enrichment fold.                 |
-| h2            | Estimation for heritability.                                 |
-| intercept     | Estimation for intercept.                                    |
-| fold.se       | Standard error of estimation for heritability enrichment fold. |
-| h2.se         | Standard error of estimation for heritability.               |
-| intercept.se  | Standard error of estimation for intercept.se.               |
-| fold.p        | P-value of estimation for heritability enrichment fold.      |
-| h2.p          | P-value of estimation for heritability.                      |
-| stepwise      | Input `stepwise` parameter.                                  |
-| converged     | Whether the optimization converges or not.                   |
-| optim.message | The optimization message returned by `optim` function in `R`. |
+|item          | estimation|        se|              p|note                                             |
+|:-------------|----------:|---------:|--------------:|:------------------------------------------------|
+|time          | 52.5394132|        NA|             NA|seconds                                          |
+|h2            |  0.1639165| 0.0054560|  2.686049e-198|total heritability                               |
+|intercept     |  0.9632359| 0.0106590|   0.000000e+00|intercept                                        |
+|fold.ENS.gene |  1.2739806| 0.0259721|   5.132955e-26|enrichment fold                                  |
+|converged     |         NA|        NA|             NA|TRUE                                             |
+|message       |         NA|        NA|             NA|CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL |
 
+**Notice**:
+
+* The item `time` only indicates the time for maximizing log likelihood, **NOT** including the time for converting z (D) to zr (Dr).
+* The **null hypothesis** of `p` value for the fold parameter is $fold \ne 1$, **NOT** $fold > 1$.

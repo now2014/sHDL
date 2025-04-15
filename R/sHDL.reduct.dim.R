@@ -1,16 +1,17 @@
 #' Reduce the dimension of covariance matrix by converting z (D) to zr (Dr).
 #'
 #' @param LD.path Path to the \code{.rda} file where the Eigen decomposition of LD matrix is stored.
-#' @param D A vector of genomic annotations with vector names of SNP IDs.
+#' @param D A matrix of annotation weights with rownames of SNP IDs and colnames specifying the annotation names.
 #' @param z A matrix of Z-scores with rownames of SNP IDs. \bold{Supporting multiple columns for multiple traits.}
-#' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff.
+#' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.
 #' @param Dr.path Path to the directory where the Dr matrices are stored, default Dr.path = NULL, which means do not store Dr to disk.
 #' @param overwrite Whether to overwrite the existing Dr matrices, default overwrite = FALSE.
 #' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
-#' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}.
+#' @param mc.cores Number of cores to use for parallelization, default \code{mc.cores = 1}.
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
 #' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.
 #' @param log.file Where the log should be written. If you do not specify a file, the log will be printed on the console.
+#' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.
 #' @return A list is returned with:
 #' \itemize{
 #' \item{Dr }{The reduct RDR matrix.}
@@ -24,85 +25,38 @@
 #' @importFrom RhpcBLASctl blas_set_num_threads omp_set_num_threads
 
 sHDL.reduct.dim <- function(LD.path, z=NULL, D=NULL, lam.cut=NULL,
-  Dr.path=NULL, overwrite=FALSE, mode=c("disk", "memory"), nthreads=1,
-  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*",
-  norm.method=c("minmax", "scaled", "none"), log.file=""){
+  Dr.path=NULL, overwrite=FALSE, mode=c("disk", "memory"),
+  mc.cores=1, pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*",
+  norm.method=c("minmax", "scaled", "none"), log.file="", nthreads=1){
   # use RhpcBLASctl to control the number of thread
-  blas_set_num_threads(nthreads)
-  omp_set_num_threads(nthreads)
+  RhpcBLASctl::blas_set_num_threads(nthreads)
+  RhpcBLASctl::omp_set_num_threads(nthreads)
+
+  if(!is.null(D) && is.null(Dr.path)){
+    Dr.path <- "./sHDL_Dr"
+    msg <- sprintf(
+      "D is not NULL and Dr.path is not provided. The default path %s will be used.\n",
+      Dr.path
+    )
+    sHDL:::log.msg(msg, log.file)
+  }
+
   if(!is.null(Dr.path) && Dr.path!="" && !dir.exists(Dr.path))
     dir.create(Dr.path, recursive = TRUE)
   mode <- match.arg(mode)
   if(is.null(Dr.path)) mode <- "memory"
+
   LD.files <- sHDL:::list.LD.ref.files(LD.path, suffix=".rda",
     pattern=pattern, log.file=log.file)
 
-  if(!is.null(D)) D <- sHDL:::normD(D, LD.path, norm.method=norm.method, pattern=pattern)
-  ref.data <- list()
-  for(i in seq_along(LD.files)){
-    LD.file <- LD.files[i]
-    Dr.file <- NULL
-    if(!is.null(Dr.path)) Dr.file <- paste0(Dr.path, "/", basename(LD.file))
-    if(mode=="disk" && !is.null(Dr.file) && file.exists(Dr.file) && !overwrite){
-      load(Dr.file) # Dr, lam, Md, M
-      Dr <- Dr.file
-      lam <- NULL
-    }else if(mode=="memory" && !is.null(Dr.file) && file.exists(Dr.file) && !overwrite){
-      load(Dr.file) # Dr, lam, Md, M
-    }else{
-      Dr <- NULL
-      lam <- NULL
-      Md <- NULL
-      M <- NULL
-    }
+  if(!is.null(D)) D <- sHDL:::normD(D, LD.path, log.file, norm.method, pattern)
 
-    if(is.null(z) && !is.null(Dr)){
-      ref.data[[i]] <- list(Dr=Dr, zr=NULL, lam=lam, Md=Md, M=M)
-      next
-    }
+  ref.data <- parallel::mclapply(
+    LD.files, sHDL:::trans.zD, Dr.path=Dr.path, z=z, D=D,
+    lam.cut=lam.cut, mode=mode,
+    overwrite=overwrite, log.file=log.file, nthreads=nthreads,
+    mc.cores=mc.cores
+  )
 
-    load(LD.file) # V, lam, LDsc
-    if(exists('U') && !exists('V')){
-      V <- U
-      rm('U')
-    }
-    if(!is.null(lam.cut)){
-      idx <- lam > lam.cut
-      if(sum(idx)==0) idx[1] <- TRUE
-      V <- V[,idx]
-      lam <- lam[idx]
-    }
-    snps.ref <- row.names(V)
-    M <- length(snps.ref)
-
-    if(!is.null(z)){
-      z[is.na(z)] <- 0
-      z[!is.finite(z)] <- 0
-      Z <- matrix(0, nrow=M, ncol=ncol(z))
-      row.names(Z) <- snps.ref
-      int.snps <- intersect(snps.ref, row.names(z))
-      Z[int.snps,] <- z[int.snps,]
-      zr <- crossprod(V, Z)
-    }else{
-      zr <- NULL
-    }
-
-    if(!is.null(D) && is.null(Dr)){
-      dD <- numeric(M)
-      names(dD) <- snps.ref
-      int.snps <- intersect(snps.ref, names(D))
-      dD[int.snps] <- D[int.snps]
-      Dr <- diag(lam) %*% t(V) %*% diag(dD) %*% V %*% diag(lam)
-      Md <- sum(dD)
-
-      if(!is.null(Dr.path) && (overwrite || !file.exists(Dr.file))) save(Dr, lam, Md, M, file=Dr.file)
-
-      if(mode=="disk"){
-        Dr <- Dr.file
-      }
-    }
-    rm('V')
-    ref.data[[i]] <- list(Dr=Dr, zr=zr, lam=lam, Md=Md, M=M)
-  }
   return(ref.data)
 }

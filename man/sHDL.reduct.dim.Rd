@@ -12,10 +12,11 @@ sHDL.reduct.dim(
   Dr.path = NULL,
   overwrite = FALSE,
   mode = c("disk", "memory"),
-  nthreads = 1,
+  mc.cores = 1,
   pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*",
   norm.method = c("minmax", "scaled", "none"),
-  log.file = ""
+  log.file = "",
+  nthreads = 1
 )
 }
 \arguments{
@@ -23,9 +24,9 @@ sHDL.reduct.dim(
 
 \item{z}{A matrix of Z-scores with rownames of SNP IDs. \bold{Supporting multiple columns for multiple traits.}}
 
-\item{D}{A vector of genomic annotations with vector names of SNP IDs.}
+\item{D}{A matrix of annotation weights with rownames of SNP IDs and colnames specifying the annotation names.}
 
-\item{lam.cut}{Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff.}
+\item{lam.cut}{Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.}
 
 \item{Dr.path}{Path to the directory where the Dr matrices are stored, default Dr.path = NULL, which means do not store Dr to disk.}
 
@@ -33,13 +34,15 @@ sHDL.reduct.dim(
 
 \item{mode}{Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.}
 
-\item{nthreads}{Number of threads to use for matrix operations, default \code{nthreads = 1}.}
+\item{mc.cores}{Number of cores to use for parallelization, default \code{mc.cores = 1}.}
 
 \item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
 
 \item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.}
 
 \item{log.file}{Where the log should be written. If you do not specify a file, the log will be printed on the console.}
+
+\item{nthreads}{Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.}
 }
 \value{
 A list is returned with:

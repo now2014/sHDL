@@ -1,16 +1,16 @@
 #' Perform heritability enrichment analysis of trait based on GWAS summary statistics.
 #'
-#' @param D A vector of genomic annotations with vector names of SNP IDs.
+#' @param D A single-column matrix of annotation weights with rownames of SNP IDs and colname specifying the annotation name. Must have exactly one column.
 #' @param gwas.df A data frame including GWAS summary statistics of genetic variants for a trait.
 #' The input data frame should include following columns: SNP, SNP ID; A1, effect allele; A2, reference allele;
 #' N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b, estimate of marginal effect in GWAS; se, standard error of the estimates of marginal effects in GWAS.
 #' @param LD.path Path to the directory where linkage disequilibrium (LD) information is stored, compatible with HDL LD reference panels.
 #' @param output.file Where the log and results should be written. If you do not specify a file, the log will be printed on the console.
-#' @param nthreads Number of threads to use, default \code{nthreads = 1}.
+#' @param mc.cores Number of cores to use for parallelization, default \code{mc.cores = 1}.
 #' @param stepwise Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.
 #' @param fill.missing.N If the sample size is missing in the GWAS summary statistics, \code{fill.missing.N} is used to fill the missing values.
 #' @param lim Tolerance limitation to ensure the positive-definiteness of covariance matrices, default \code{lim = exp(-18)}.
-#' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff.
+#' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.
 #' @param Dr.path Path to the directory where the Dr matrices are stored, default \code{Dr.path = "./Dr"}.
 #' @param overwrite Whether to overwrite the existing Dr matrices, default \code{overwrite = FALSE}.
 #' @param verbose Whether to print the log on the console, default \code{verbose = FALSE}.
@@ -18,12 +18,14 @@
 #' @param fix.intercept Whether to fix the intercept to \code{fix.intercept} or estimate the intercept, default \code{fix.intercept = NULL}, which means estimate the intercept.
 #' @param maxit Maximum number of iterations, default \code{maxit = 1000}.
 #' @param pgtol Tolerance for convergence, default \code{pgtol = 1e-3}.
-#' @param start.v A vector of starting values \code{c(fold, h2, intercept)} for optimization.
-#' @param lwr Lower bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(0, 0, 0.1)}.
-#' @param upr Upper bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(M / Md, 1, 5)}, where \code{Md} is the sum of annotation weights and \code{M} is the total number of SNPs.
-#' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
+#' @param start.v A vector of starting values \code{c(h2, intercept, fold)} for optimization.
+#' @param lwr Lower bounds for \code{c(h2, intercept, fold)}. Default is \code{NULL}, which means \code{c(0, 0.1, 0)}.
+#' @param upr Upper bounds for \code{c(h2, intercept, fold)}. Default is \code{NULL}, which means \code{c(1, 5, M / Md)}, where \code{Md} is the sum of annotation weights and \code{M} is the total number of SNPs.
+#' @param mode If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only). If \code{mode = "memory"}, \code{Dr} is loaded to memory (matrix returned). Default is \code{mode = "disk"}.
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
 #' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.
+#' @param par.h2 Whether to estimate the partitioned heritability, default \code{par.h2 = FALSE}.
+#' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.
 #' @note Users can download the precomputed eigenvalues and eigenvectors of LD correlation matrices for European ancestry population. The download link can be found at https://github.com/zhenin/HDL/wiki/Reference-panels
 #' These are the LD matrices and their eigen-decomposition from 335,265 genomic British UK Biobank individuals. Three sets of reference panel are provided:
 #' 1) 1,029,876 QCed UK Biobank imputed HapMap3 SNPs. The size is about 33 GB after unzipping. Although it takes more time, using the imputed panel provides more accurate estimates of genetic correlations.
@@ -48,14 +50,19 @@
 #' \item{converged }{Whether the optimization converges.}
 #' \item{message }{The message returned by \code{\link{optim}}.}
 #' }
-#'
+#' If \code{par.h2 = TRUE}, the following additional items are returned:
+#' \itemize{
+#' \item{par.h2 }{The estimated partitioned heritability.}
+#' \item{par.h2.se }{The standard error of the estimated partitioned heritability.}
+#' \item{par.h2.p }{P-value based on Wald test for the estimated partitioned heritability.}
+#' }
 #' @author Ao Lan, Xia Shen
 #'
 #' @references
 #' Lan A and Shen X (2024). Modeling the Genetic Architecture of Complex Traits via Stratified High-Definition Likelihood.
 #'
 #' @importFrom dplyr filter distinct
-#' @importFrom parallel makeCluster stopCluster clusterExport
+#' @importFrom parallel mclapply
 #' @importFrom RhpcBLASctl blas_set_num_threads omp_set_num_threads
 #'
 #' @examples
@@ -64,26 +71,28 @@
 #' data(gwas1.example, package='HDL')
 #' M <- nrow(gwas1.example)
 #' set.seed(1234)
-#' D <- rbinom(M, 1, 0.01) # random D vector
-#' names(D) <- gwas1.example$SNP
+#' D <- matrix(rbinom(M, 1, 0.01), ncol=1) # random D vector
+#' row.names(D) <- gwas1.example$SNP
+#' colnames(D) <- 'testAnno'
 #'
 #' ## The path to the directory where linkage disequilibrium (LD) information is stored.
 #' LD.path <- "path/to/UKB_array_SVD_eigen90_extraction"
 #' 
 #' ## To speed up the test, we set a large lam.cut value.
-#' res.sHDL <- sHDL(D, gwas1.example, LD.path, nthreads=4, stepwise=TRUE, lam.cut=10, Dr.path=NULL, mode="memory")
+#' res.sHDL <- sHDL(D, gwas1.example, LD.path, mc.cores=4, stepwise=TRUE, lam.cut=10, Dr.path=NULL, mode="memory")
 #' print(as.data.frame(res.sHDL))
 #' }
 #' @export
 #'
 
-sHDL <-function(
-  D, gwas.df, LD.path, output.file = NULL, nthreads = 1, stepwise = TRUE,
+sHDL <- function(
+  D, gwas.df, LD.path, output.file = NULL, mc.cores = 1, stepwise = TRUE,
   fill.missing.N = c("none", "min", "max", "median", "mean"),
   lim = exp(-18), lam.cut = NULL, Dr.path = "./Dr", overwrite = FALSE, verbose = FALSE,
   fix.h2 = NULL, fix.intercept = NULL, maxit=1000,
-  pgtol=1e-3, start.v = c(1, 0.1, 1), lwr=NULL, upr=NULL, mode=c("disk", "memory"),
-  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", norm.method=c("minmax", "scaled", "none")){
+  pgtol=1e-3, start.v = c(0.1, 1, 1), lwr=NULL, upr=NULL, mode=c("disk", "memory"),
+  pattern=".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*", norm.method=c("minmax", "scaled", "none"),
+  par.h2=FALSE, nthreads = 1){
 
   mode <- match.arg(mode)
   if(!is.null(output.file)){
@@ -91,12 +100,6 @@ sHDL <-function(
     if(file.exists(log.file)) unlink(log.file)
   }else{
     log.file <- ""
-  }
-
-  if(nthreads > 1){
-    clust <- makeCluster(nthreads, outfile=log.file)
-  }else{
-    clust <- NULL
   }
 
   sHDL:::log.msg("Starting sHDL analysis...\n", log.file)
@@ -107,18 +110,19 @@ sHDL <-function(
   z <- matrix(z, ncol=1)
   rownames(z) <- gwas.df$SNP
 
-  sHDL:::log.msg("Normalizing D...\n", log.file)
+  sHDL:::log.msg("Transfoming z (D) to zr (Dr)...\n", log.file)
   ref.data <- sHDL:::sHDL.reduct.dim(LD.path, z=z, D=D, lam.cut=lam.cut,
     Dr.path=Dr.path, overwrite=overwrite, mode=mode,
-    nthreads=nthreads, pattern=pattern, norm.method=norm.method)
-  M <- sum(unlist(lapply(ref.data, function(x) x$M)))
-  Md <- sum(unlist(lapply(ref.data, function(x) x$Md)))
+    mc.cores=mc.cores, pattern=pattern,
+    norm.method=norm.method, log.file=log.file, nthreads=nthreads
+  )
 
   sHDL:::log.msg("Starting optimization...\n", log.file)
-  res <- sHDL.optim(
+  res <- sHDL:::sHDL.optim(
     ref.data, N, start.v, output.file, log.file,
-    stepwise, fix.h2, fix.intercept, lim, verbose, clust,
-    lwr=lwr, upr=upr, maxit=maxit, pgtol=pgtol
+    stepwise, fix.h2, fix.intercept, lim, verbose,
+    lwr=lwr, upr=upr, maxit=maxit, pgtol=pgtol, par.h2=par.h2,
+    mc.cores=mc.cores, nthreads=nthreads
   )
   return(res)
 }

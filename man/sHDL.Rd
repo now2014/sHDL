@@ -9,7 +9,7 @@ sHDL(
   gwas.df,
   LD.path,
   output.file = NULL,
-  nthreads = 1,
+  mc.cores = 1,
   stepwise = TRUE,
   fill.missing.N = c("none", "min", "max", "median", "mean"),
   lim = exp(-18),
@@ -21,16 +21,18 @@ sHDL(
   fix.intercept = NULL,
   maxit = 1000,
   pgtol = 0.001,
-  start.v = c(1, 0.1, 1),
+  start.v = c(0.1, 1, 1),
   lwr = NULL,
   upr = NULL,
   mode = c("disk", "memory"),
   pattern = ".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*",
-  norm.method = c("minmax", "scaled", "none")
+  norm.method = c("minmax", "scaled", "none"),
+  par.h2 = FALSE,
+  nthreads = 1
 )
 }
 \arguments{
-\item{D}{A vector of genomic annotations with vector names of SNP IDs.}
+\item{D}{A single-column matrix of annotation weights with rownames of SNP IDs and colname specifying the annotation name. Must have exactly one column.}
 
 \item{gwas.df}{A data frame including GWAS summary statistics of genetic variants for a trait.
 The input data frame should include following columns: SNP, SNP ID; A1, effect allele; A2, reference allele;
@@ -40,7 +42,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 \item{output.file}{Where the log and results should be written. If you do not specify a file, the log will be printed on the console.}
 
-\item{nthreads}{Number of threads to use, default \code{nthreads = 1}.}
+\item{mc.cores}{Number of cores to use for parallelization, default \code{mc.cores = 1}.}
 
 \item{stepwise}{Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.}
 
@@ -48,7 +50,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 \item{lim}{Tolerance limitation to ensure the positive-definiteness of covariance matrices, default \code{lim = exp(-18)}.}
 
-\item{lam.cut}{Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff.}
+\item{lam.cut}{Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.}
 
 \item{Dr.path}{Path to the directory where the Dr matrices are stored, default \code{Dr.path = "./Dr"}.}
 
@@ -64,17 +66,21 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 \item{pgtol}{Tolerance for convergence, default \code{pgtol = 1e-3}.}
 
-\item{start.v}{A vector of starting values \code{c(fold, h2, intercept)} for optimization.}
+\item{start.v}{A vector of starting values \code{c(h2, intercept, fold)} for optimization.}
 
-\item{lwr}{Lower bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(0, 0, 0.1)}.}
+\item{lwr}{Lower bounds for \code{c(h2, intercept, fold)}. Default is \code{NULL}, which means \code{c(0, 0.1, 0)}.}
 
-\item{upr}{Upper bounds for \code{c(fold, h2, intercept)}. Default is \code{NULL}, which means \code{c(M / Md, 1, 5)}, where \code{Md} is the sum of annotation weights and \code{M} is the total number of SNPs.}
+\item{upr}{Upper bounds for \code{c(h2, intercept, fold)}. Default is \code{NULL}, which means \code{c(1, 5, M / Md)}, where \code{Md} is the sum of annotation weights and \code{M} is the total number of SNPs.}
 
-\item{mode}{Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.}
+\item{mode}{If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only). If \code{mode = "memory"}, \code{Dr} is loaded to memory (matrix returned). Default is \code{mode = "disk"}.}
 
 \item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
 
 \item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.}
+
+\item{par.h2}{Whether to estimate the partitioned heritability, default \code{par.h2 = FALSE}.}
+
+\item{nthreads}{Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.}
 }
 \value{
 A list is returned with:
@@ -92,6 +98,12 @@ A list is returned with:
 \item{stepwise }{Whether the optimization is done in a stepwise manner.}
 \item{converged }{Whether the optimization converges.}
 \item{message }{The message returned by \code{\link{optim}}.}
+}
+If \code{par.h2 = TRUE}, the following additional items are returned:
+\itemize{
+\item{par.h2 }{The estimated partitioned heritability.}
+\item{par.h2.se }{The standard error of the estimated partitioned heritability.}
+\item{par.h2.p }{P-value based on Wald test for the estimated partitioned heritability.}
 }
 }
 \description{
@@ -112,14 +124,15 @@ then this HapMap2 panel is more proper to be used for HDL.
 data(gwas1.example, package='HDL')
 M <- nrow(gwas1.example)
 set.seed(1234)
-D <- rbinom(M, 1, 0.01) # random D vector
-names(D) <- gwas1.example$SNP
+D <- matrix(rbinom(M, 1, 0.01), ncol=1) # random D vector
+row.names(D) <- gwas1.example$SNP
+colnames(D) <- 'testAnno'
 
 ## The path to the directory where linkage disequilibrium (LD) information is stored.
 LD.path <- "path/to/UKB_array_SVD_eigen90_extraction"
 
 ## To speed up the test, we set a large lam.cut value.
-res.sHDL <- sHDL(D, gwas1.example, LD.path, nthreads=4, stepwise=TRUE, lam.cut=10, Dr.path=NULL, mode="memory")
+res.sHDL <- sHDL(D, gwas1.example, LD.path, mc.cores=4, stepwise=TRUE, lam.cut=10, Dr.path=NULL, mode="memory")
 print(as.data.frame(res.sHDL))
 }
 }

@@ -133,32 +133,23 @@ Updating chr22_1 in 8.26 seconds: 4352 (out of 5420) SNPs are kept.
     D, gwas1.example, LD.path.new, nthreads=4,
     stepwise=TRUE, lam.cut=1, Dr.path=NULL, mode="memory"
   )
-  # Formating GWAS summary statistics ...
-  
-  # 246015 out of 246015 (100%) SNPs in reference panel are available in the GWAS.
-  # Converting z (D) to zr (Dr) ...
-  
-  # Applied `minmax` weight nomalization on 24634 (10.013)% annotated variants.
-  # The upper boundary for enrichment fold is 9.987.
-  # Optimizing ...
-  
-  # Optimization done in 27.523 seconds.
-  
-  # time  27.5229136943817
-  # fold  1
-  # h2  0.150313183380116
-  # intercept 0.985128189915527
-  # fold.se 0.126907671398178
-  # h2.se 0.00564781178384186
-  # intercept.se  0.012627945250898
-  # fold.p  1
-  # h2.p  4.62367704900812e-156
-  # intercept.p 0
-  # stepwise  TRUE
-  # converged TRUE
-  # optim.message CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH
+  # Starting sHDL analysis...
+  # 246015 out of 246015 (100.00%) SNPs in reference panel are available in the GWAS.
+  # Transfoming z (D) to zr (Dr)...
+  # D is not NULL and Dr.path is not provided. The default path ./sHDL_Dr will be used.
+  # Annotation name(s): [randD].
+  # Applied `minmax` weight nomalization on [24634 (10.013%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [9.987].
+  # Starting optimization...
+  # Optimization done in 41.753 seconds.
+  # item    estimation      se      p       note
+  # time    41.7533082962036        NA      NA      seconds
+  # h2      0.150313183379785       0.00564781178171049     4.62367581854552e-156   total heritability
+  # intercept       0.985128189916525       0.0126279452459156      0       intercept
+  # fold.randD      0.89182953485042        0.12523419788762        0.387727755380332       enrichment fold
+  # converged       NA      NA      NA      TRUE
+  # message NA      NA      NA      CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
   ```
-
+  
 * Test `HDL::HDL.h2`
 
   ```R
@@ -191,4 +182,3 @@ Updating chr22_1 in 8.26 seconds: 4352 (out of 5420) SNPs are kept.
   # $eigen.use
   # [1] 0.9
   ```
-
