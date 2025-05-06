@@ -189,22 +189,11 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A list is returned with:</p><ul><li><p>time The time used for optimization.</p></li>
-<li><p>fold The estimated heritability enrichment fold.</p></li>
-<li><p>h2 The estimated SNP-based heritability.</p></li>
-<li><p>intercept The estimated intercept.</p></li>
-<li><p>fold.se The standard error of the estimated heritability enrichment fold.</p></li>
-<li><p>h2.se The standard error of the estimated heritability.</p></li>
-<li><p>intercept.se The standard error of the estimated intercept.</p></li>
-<li><p>fold.p P-value based on Wald test for the estimated heritability enrichment fold.</p></li>
-<li><p>h2.p P-value based on Wald test for the estimated heritability.</p></li>
-<li><p>intercept.p P-value based on Wald test for the estimated intercept.</p></li>
-<li><p>stepwise Whether the optimization is done in a stepwise manner.</p></li>
-<li><p>converged Whether the optimization converges.</p></li>
-<li><p>message The message returned by <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a></code>.</p></li>
-</ul><p>If <code>par.h2 = TRUE</code>, the following additional items are returned:</p><ul><li><p>par.h2 The estimated partitioned heritability.</p></li>
-<li><p>par.h2.se The standard error of the estimated partitioned heritability.</p></li>
-<li><p>par.h2.p P-value based on Wald test for the estimated partitioned heritability.</p></li>
+<p>A data.frame is returned with:</p><ul><li><p>item  The name of the parameter.</p></li>
+<li><p>estimation  The estimated value of the parameter.</p></li>
+<li><p>se  The standard error of the parameter.</p></li>
+<li><p>p  The p-value of the parameter.</p></li>
+<li><p>note  The note of the parameter.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>

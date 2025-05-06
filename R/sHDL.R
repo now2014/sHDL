@@ -34,27 +34,13 @@
 #' then this HapMap2 panel is more proper to be used for HDL.
 #' 3) 307,519 QCed UK Biobank Axiom Array SNPs. The size is about 7.5 GB after unzipping.
 #'
-#' @return A list is returned with:
+#' @return  A data.frame is returned with:
 #' \itemize{
-#' \item{time }{The time used for optimization.}
-#' \item{fold }{The estimated heritability enrichment fold.}
-#' \item{h2 }{The estimated SNP-based heritability.}
-#' \item{intercept }{The estimated intercept.}
-#' \item{fold.se }{The standard error of the estimated heritability enrichment fold.}
-#' \item{h2.se }{The standard error of the estimated heritability.}
-#' \item{intercept.se }{The standard error of the estimated intercept.}
-#' \item{fold.p }{P-value based on Wald test for the estimated heritability enrichment fold.}
-#' \item{h2.p }{P-value based on Wald test for the estimated heritability.}
-#' \item{intercept.p }{P-value based on Wald test for the estimated intercept.}
-#' \item{stepwise }{Whether the optimization is done in a stepwise manner.}
-#' \item{converged }{Whether the optimization converges.}
-#' \item{message }{The message returned by \code{\link{optim}}.}
-#' }
-#' If \code{par.h2 = TRUE}, the following additional items are returned:
-#' \itemize{
-#' \item{par.h2 }{The estimated partitioned heritability.}
-#' \item{par.h2.se }{The standard error of the estimated partitioned heritability.}
-#' \item{par.h2.p }{P-value based on Wald test for the estimated partitioned heritability.}
+#' \item{item } The name of the parameter.
+#' \item{estimation } The estimated value of the parameter.
+#' \item{se } The standard error of the parameter.
+#' \item{p } The p-value of the parameter.
+#' \item{note } The note of the parameter.
 #' }
 #' @author Ao Lan, Xia Shen
 #'

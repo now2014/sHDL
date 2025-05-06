@@ -71,7 +71,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 \item{nthreads}{Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.}
 }
 \value{
-A list is returned with:
+A data.frame is returned with:
 \itemize{
 \item{item } The name of the parameter.
 \item{estimation } The estimated value of the parameter.

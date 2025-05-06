@@ -22,7 +22,7 @@
 #' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
 #' @param par.h2 Whether to estimate the partitioned heritability, default \code{par.h2 = FALSE}.
 #' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.
-#' @return  A list is returned with:
+#' @return  A data.frame is returned with:
 #' \itemize{
 #' \item{item } The name of the parameter.
 #' \item{estimation } The estimated value of the parameter.

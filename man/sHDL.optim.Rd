@@ -64,7 +64,7 @@ sHDL.optim(
 \item{lam.cut}{Cutoff for the eigenvalues, default is \code{NULL}, which means no cutoff. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.}
 }
 \value{
-A list is returned with:
+A data.frame is returned with:
 \itemize{
 \item{item } The name of the parameter.
 \item{estimation } The estimated value of the parameter.
