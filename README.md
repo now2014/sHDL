@@ -77,6 +77,3 @@ Reporting bugs by opening a new issue on this [Github page](https://github.com/n
 
 Sending email to authors:  [Ao Lan](mailto:lanao@mail2.sysu.edu.cn) or [Xia Shen](mailto:shenx@fudan.edu.cn).
 
-## Future plan
-
-This repository will be integrated into the [HDL](https://github.com/zhenin/HDL) software in the future.
