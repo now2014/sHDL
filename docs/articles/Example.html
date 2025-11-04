@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,7 +80,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Example of sHDL</h1>
             
-            <h4 data-toc-skip class="date">2025-05-06</h4>
+            <h4 data-toc-skip class="date">2025-11-04</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/now2014/sHDL/blob/main/vignettes/Example.Rmd" class="external-link"><code>vignettes/Example.Rmd</code></a></small>
       <div class="d-none name"><code>Example.Rmd</code></div>
@@ -291,29 +291,31 @@ from <code>HDL</code>) :</p>
 <span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="ex">307519</span> out of 307519 <span class="er">(</span><span class="ex">100.00%</span><span class="kw">)</span> <span class="ex">SNPs</span> in reference panel are available in the GWAS.</span>
 <span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="ex">Transfoming</span> z <span class="er">(</span><span class="ex">D</span><span class="kw">)</span> <span class="ex">to</span> zr <span class="er">(</span><span class="ex">Dr</span><span class="kw">)</span><span class="ex">...</span></span>
 <span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="ex">D</span> is not NULL and Dr.path is not provided. The default path ./sHDL_Dr will be used.</span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="ex">Applied</span> <span class="kw">`</span><span class="ex">minmax</span><span class="kw">`</span> weight nomalization on 147849 <span class="er">(</span><span class="ex">48.078%</span><span class="kw">)</span> <span class="ex">annotated</span> variants.</span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="ex">The</span> theoretical upper boundary for enrichment fold is M / Md = 2.080.</span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="ex">Starting</span> optimization...</span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="ex">Optimization</span> done in 52.539 seconds.</span>
-<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="ex">item</span>    estimation      se      p       note</span>
-<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="bu">time</span>    52.5394132137299        NA      NA      seconds</span>
-<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="ex">h2</span>      0.16391651163241        0.00545604327753226     2.68604947190574e-198   total heritability</span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="ex">intercept</span>       0.963235890727237       0.0106589577723641      0       intercept</span>
-<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="ex">fold.ENS.gene</span>   1.2739805907671 0.0259721362754955      5.13295507071105e-26    enrichment fold</span>
-<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="ex">converged</span>       NA      NA      NA      TRUE</span>
-<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="ex">message</span> NA      NA      NA      CONVERGENCE: NORM OF PROJECTED GRADIENT <span class="op">&lt;</span>= PGTOL</span>
-<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="ex">Time</span> difference of 2.185567 mins</span></code></pre></div>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="ex">Annotation</span> name<span class="er">(</span><span class="ex">s</span><span class="kw">)</span><span class="bu">:</span> <span class="pp">[</span><span class="ss">ENS.gene</span><span class="pp">]</span>.</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="ex">Applied</span> <span class="kw">`</span><span class="ex">minmax</span><span class="kw">`</span> weight nomalization on [147849 <span class="er">(</span><span class="ex">48.078%</span><span class="kw">)</span><span class="ex">]</span> annotated variants. The theoretical upper boundary for enrichment fold is M / Md = <span class="pp">[</span><span class="ss">2.080</span><span class="pp">]</span>.</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="ex">Dr</span> saved to </span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="ex">Starting</span> optimization...</span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="ex">Optimization</span> done in 112.997 seconds.</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="ex">item</span>    estimation      se      p       note</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="bu">time</span>    112.996711730957        NA      NA      seconds</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="ex">h2</span>      0.357640057353687       0.0752782467546387      2.02504822923168e-06    total heritability</span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="ex">intercept</span>       0.920875135658489       0.0241090513453767      3.25119898245832e-319   intercept</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="ex">eta</span>     <span class="at">-0.177230823347607</span>      0.039603506139107       7.63649707679419e-06    eta</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="ex">fold.ENS.gene</span>   1.1880681869999 0.0304909124069927      6.9155713083808e-10     enrichment fold</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="ex">converged</span>       NA      NA      NA      TRUE</span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="ex">message</span> NA      NA      NA      CONVERGENCE: REL_REDUCTION_OF_F <span class="op">&lt;</span>= FACTR<span class="pp">*</span>EPSMCH</span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="ex">Time</span> difference of 2.824235 mins</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="results-of-shdl">Results of sHDL<a class="anchor" aria-label="anchor" href="#results-of-shdl"></a>
 </h2>
 <table class="table">
 <colgroup>
-<col width="14%">
-<col width="11%">
-<col width="10%">
 <col width="15%">
-<col width="49%">
+<col width="13%">
+<col width="10%">
+<col width="8%">
+<col width="52%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">item</th>
@@ -325,46 +327,52 @@ from <code>HDL</code>) :</p>
 <tbody>
 <tr class="odd">
 <td align="left">time</td>
-<td align="right">52.5394132</td>
+<td align="right">112.9967117</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="left">seconds</td>
 </tr>
 <tr class="even">
 <td align="left">h2</td>
-<td align="right">0.1639165</td>
-<td align="right">0.0054560</td>
-<td align="right">2.686049e-198</td>
+<td align="right">0.3576401</td>
+<td align="right">0.0752782</td>
+<td align="right">2.0e-06</td>
 <td align="left">total heritability</td>
 </tr>
 <tr class="odd">
 <td align="left">intercept</td>
-<td align="right">0.9632359</td>
-<td align="right">0.0106590</td>
-<td align="right">0.000000e+00</td>
+<td align="right">0.9208751</td>
+<td align="right">0.0241091</td>
+<td align="right">0.0e+00</td>
 <td align="left">intercept</td>
 </tr>
 <tr class="even">
-<td align="left">fold.ENS.gene</td>
-<td align="right">1.2739806</td>
-<td align="right">0.0259721</td>
-<td align="right">5.132955e-26</td>
-<td align="left">enrichment fold</td>
+<td align="left">eta</td>
+<td align="right">-0.1772308</td>
+<td align="right">0.0396035</td>
+<td align="right">7.6e-06</td>
+<td align="left">eta</td>
 </tr>
 <tr class="odd">
+<td align="left">fold.ENS.gene</td>
+<td align="right">1.1880682</td>
+<td align="right">0.0304909</td>
+<td align="right">0.0e+00</td>
+<td align="left">enrichment fold</td>
+</tr>
+<tr class="even">
 <td align="left">converged</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="left">TRUE</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">message</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
-<td align="left">CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;=
-PGTOL</td>
+<td align="left">CONVERGENCE: REL_REDUCTION_OF_F &lt;= FACTR*EPSMCH</td>
 </tr>
 </tbody>
 </table>

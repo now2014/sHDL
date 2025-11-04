@@ -36,7 +36,7 @@ sHDL.reduct.dim(
 
 \item{mc.cores}{Number of cores to use for parallelization, default \code{mc.cores = 1}.}
 
-\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
+\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"}.}
 
 \item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.}
 

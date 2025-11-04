@@ -137,19 +137,21 @@ D <- matrix(1, nrow=length(snps), ncol=1, dimnames=list(snps, 'Top10.genes'))
 data(gwas1.example, package='HDL')
 res <- sHDL::sHDL(
   D, gwas1.example, LD.path, mc.cores=4,
-  stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL
+  stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL, fix.eta=0
 )
 
 # print(knitr::kable(res))
 
-# |item             | estimation|        se|         p|note                                             |
-# |:----------------|----------:|---------:|---------:|:------------------------------------------------|
-# |time             | 60.7460063|        NA|        NA|seconds                                          |
-# |h2               |  0.1639165| 0.0054560| 0.0000000|total heritability                               |
-# |intercept        |  0.9632359| 0.0106590| 0.0000000|intercept                                        |
-# |fold.Top10.genes |  1.3037835| 0.1047777| 0.0037398|enrichment fold                                  |
-# |converged        |         NA|        NA|        NA|TRUE                                             |
-# |message          |         NA|        NA|        NA|CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL |
+# |item             |  estimation|        se|         p|note                                            |
+# |:----------------|-----------:|---------:|---------:|:-----------------------------------------------|
+# |time             | 107.4248767|        NA|        NA|seconds                                         |
+# |h2               |   0.3576401| 0.0752782| 0.0000020|total heritability                              |
+# |intercept        |   0.9208751| 0.0241091| 0.0000000|intercept                                       |
+# |eta              |  -0.1772308| 0.0396035| 0.0000076|eta                                             |
+# |fold.Top10.genes |   1.2268823| 0.0742474| 0.0022449|enrichment fold                                 |
+# |converged        |          NA|        NA|        NA|TRUE                                            |
+# |message          |          NA|        NA|        NA|CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH |
+
 ```
 
 ## Continuous annotation
@@ -266,13 +268,17 @@ res <- sHDL::sHDL(
   stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL, norm.method='minmax'
 )
 
-# print(str(res))
-# 'data.frame':   6 obs. of  5 variables:
-#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W.minmax" ...
-#  $ estimation: num  56.354 0.164 0.963 8.741 NA ...
-#  $ se        : num  NA 0.00546 0.01066 0.90955 NA ...
-#  $ p         : num  NA 2.69e-198 0.00 1.72e-17 NA ...
-#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...
+# print(knitr::kable(res))
+# |item              |  estimation|        se|       p|note                                             |
+# |:-----------------|-----------:|---------:|-------:|:------------------------------------------------|
+# |time              | 125.1962769|        NA|      NA|seconds                                          |
+# |h2                |   0.3576401| 0.0752782| 2.0e-06|total heritability                               |
+# |intercept         |   0.9208751| 0.0241091| 0.0e+00|intercept                                        |
+# |eta               |  -0.1772308| 0.0396035| 7.6e-06|eta                                              |
+# |fold.raw.W.minmax |   4.1409834| 0.3769147| 0.0e+00|enrichment fold                                  |
+# |converged         |          NA|        NA|      NA|TRUE                                             |
+# |message           |          NA|        NA|      NA|CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL |
+
 ```
 
 ### Scaled normalization
@@ -310,13 +316,16 @@ res <- sHDL::sHDL(
   stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL, norm.method='scaled'
 )
 
-# print(str(res))
-# 'data.frame':   6 obs. of  5 variables:
-#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W.scaled" ...
-#  $ estimation: num  64.204 0.164 0.963 1.197 NA ...
-#  $ se        : num  NA 0.00546 0.01066 0.02313 NA ...
-#  $ p         : num  NA 2.69e-198 0.00 1.73e-17 NA ...
-#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...
+# print(knitr::kable(res))
+# |item              |  estimation|        se|       p|note                                             |
+# |:-----------------|-----------:|---------:|-------:|:------------------------------------------------|
+# |time              | 118.9375212|        NA|      NA|seconds                                          |
+# |h2                |   0.3576401| 0.0752782| 2.0e-06|total heritability                               |
+# |intercept         |   0.9208751| 0.0241091| 0.0e+00|intercept                                        |
+# |eta               |  -0.1772308| 0.0396035| 7.6e-06|eta                                              |
+# |fold.raw.W.scaled |   4.1409834| 0.3769147| 0.0e+00|enrichment fold                                  |
+# |converged         |          NA|        NA|      NA|TRUE                                             |
+# |message           |          NA|        NA|      NA|CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL |
 ```
 
 ### No normalization
@@ -352,12 +361,15 @@ res <- sHDL::sHDL(
   stepwise=TRUE, lam.cut=1, mode='memory', Dr.path=NULL, norm.method='none'
 )
 
-# print(str(res))
-# 'data.frame':   6 obs. of  5 variables:
-#  $ item      : chr  "time" "h2" "intercept" "fold.raw.W" ...
-#  $ estimation: num  63.831 0.164 0.963 5.619 NA ...
-#  $ se        : num  NA 0.00546 0.01066 0.54271 NA ...
-#  $ p         : num  NA 2.69e-198 0.00 1.73e-17 NA ...
-#  $ note      : chr  "seconds" "total heritability" "intercept" "enrichment fold" ...
+# print(knitr::kable(res))
+# |item       |  estimation|        se|       p|note                                             |
+# |:----------|-----------:|---------:|-------:|:------------------------------------------------|
+# |time       | 124.6314437|        NA|      NA|seconds                                          |
+# |h2         |   0.3576401| 0.0752782| 2.0e-06|total heritability                               |
+# |intercept  |   0.9208751| 0.0241091| 0.0e+00|intercept                                        |
+# |eta        |  -0.1772308| 0.0396035| 7.6e-06|eta                                              |
+# |fold.raw.W |   4.1409834| 0.3769147| 0.0e+00|enrichment fold                                  |
+# |converged  |          NA|        NA|      NA|TRUE                                             |
+# |message    |          NA|        NA|      NA|CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL |
 ```
 

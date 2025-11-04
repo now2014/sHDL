@@ -11,12 +11,14 @@ sHDL.joint(
   output.file = NULL,
   annots = NULL,
   mc.cores = 1,
+  stepwise = FALSE,
   fill.missing.N = c("none", "min", "max", "median", "mean"),
   lim = exp(-18),
   lam.cut = NULL,
   verbose = FALSE,
   fix.h2 = NULL,
   fix.intercept = NULL,
+  fix.eta = NULL,
   maxit = 1000,
   pgtol = 0.001,
   start.v = NULL,
@@ -42,6 +44,8 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 \item{mc.cores}{Number of cores to use for parallelization, default \code{mc.cores = 1}.}
 
+\item{stepwise}{Whether to estimate enrichment fold by estimating heritability, intercept and eta first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.}
+
 \item{fill.missing.N}{If the sample size is missing in the GWAS summary statistics, \code{fill.missing.N} is used to fill the missing values.}
 
 \item{lim}{Tolerance limitation to ensure the positive-definiteness of covariance matrices, default \code{lim = exp(-18)}.}
@@ -54,17 +58,19 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 \item{fix.intercept}{Whether to fix the intercept to \code{fix.intercept} or estimate the intercept, default \code{fix.intercept = NULL}, which means estimate the intercept.}
 
+\item{fix.eta}{Whether to fix the eta to \code{fix.eta} or estimate the eta, default \code{fix.eta = NULL}, which means estimate the eta. If \code{fix.eta} is not \code{NULL}, the eta will be fixed to \code{fix.eta}.}
+
 \item{maxit}{Maximum number of iterations, default \code{maxit = 1000}.}
 
 \item{pgtol}{Tolerance for convergence, default \code{pgtol = 1e-3}.}
 
-\item{start.v}{Starting values for \code{c(h2, intercept, fold1, fold2, ..., foldn)}, where n is the number of annotations. Default is \code{NULL}, which means \code{c(0.1, 1, 1, ..., 1)}. If \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the starting values for \code{h2} or \code{intercept} will be ignored.}
+\item{start.v}{Starting values for \code{c(h2, intercept, eta, fold1, fold2, ..., foldn)}, where n is the number of annotations. Default is \code{NULL}, which means \code{c(0.1, 1, 0, 1, ..., 1)}. If \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the starting values for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
-\item{lwr}{Lower bounds for \code{c(h2, intercept, fold1, fold2, ..., foldn)}. Default is \code{NULL}, which means \code{c(0, 0, 0, 0, ..., 0)}. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the lower bounds for \code{h2} or \code{intercept} will be ignored.}
+\item{lwr}{Lower bounds for \code{c(h2, intercept, eta, fold1, fold2, ..., foldn)}. Default is \code{NULL}, which means \code{c(0, 0, -2, 0, 0, ..., 0)}. When \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the lower bounds for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
-\item{upr}{Upper bounds for \code{c(h2, intercept, fold1, fold2, ..., foldn)}, default is \code{NULL}, which means \code{c(1, 5, M/Md_1, M/Md_2, ..., M/Md_n)}, where \code{Md_i} is the sum of the weights of the i-th annotation. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the upper bounds for \code{h2} or \code{intercept} will be ignored.}
+\item{upr}{Upper bounds for \code{c(h2, intercept, eta, fold1, fold2, ..., foldn)}, default is \code{NULL}, which means \code{c(1, 5, 1, M/Md_1, M/Md_2, ..., M/Md_n)}, where \code{Md_i} is the sum of the weights of the i-th annotation. When \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the upper bounds for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
-\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
+\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"}.}
 
 \item{par.h2}{Whether to estimate the partitioned heritability, default \code{par.h2 = FALSE}.}
 

@@ -10,7 +10,7 @@ sHDL(
   LD.path,
   output.file = NULL,
   mc.cores = 1,
-  stepwise = TRUE,
+  stepwise = FALSE,
   fill.missing.N = c("none", "min", "max", "median", "mean"),
   lim = exp(-18),
   lam.cut = NULL,
@@ -19,9 +19,10 @@ sHDL(
   verbose = FALSE,
   fix.h2 = NULL,
   fix.intercept = NULL,
+  fix.eta = NULL,
   maxit = 1000,
   pgtol = 0.001,
-  start.v = c(0.1, 1, 1),
+  start.v = NULL,
   lwr = NULL,
   upr = NULL,
   mode = c("disk", "memory"),
@@ -44,7 +45,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 \item{mc.cores}{Number of cores to use for parallelization, default \code{mc.cores = 1}.}
 
-\item{stepwise}{Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.}
+\item{stepwise}{Whether to estimate enrichment fold by estimating heritability, intercept and eta first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.}
 
 \item{fill.missing.N}{If the sample size is missing in the GWAS summary statistics, \code{fill.missing.N} is used to fill the missing values.}
 
@@ -62,19 +63,21 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 \item{fix.intercept}{Whether to fix the intercept to \code{fix.intercept} or estimate the intercept, default \code{fix.intercept = NULL}, which means estimate the intercept.}
 
+\item{fix.eta}{Whether to fix the eta to \code{fix.eta} or estimate the eta, default \code{fix.eta = NULL}, which means estimate the eta. If \code{fix.eta} is not \code{NULL}, the eta will be fixed to \code{fix.eta}.}
+
 \item{maxit}{Maximum number of iterations, default \code{maxit = 1000}.}
 
 \item{pgtol}{Tolerance for convergence, default \code{pgtol = 1e-3}.}
 
-\item{start.v}{A vector of starting values \code{c(h2, intercept, fold)} for optimization.}
+\item{start.v}{A vector of starting values \code{c(h2, intercept, eta, fold)} for optimization. Default is \code{NULL}, which means \code{c(0.1, 1, 0, 1)}. If \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the starting values for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
-\item{lwr}{Lower bounds for \code{c(h2, intercept, fold)}. Default is \code{NULL}, which means \code{c(0, 0.1, 0)}.}
+\item{lwr}{Lower bounds for \code{c(h2, intercept, eta, fold)}. Default is \code{NULL}, which means \code{c(0, 0, -2, 0)}. When \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the lower bounds for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
-\item{upr}{Upper bounds for \code{c(h2, intercept, fold)}. Default is \code{NULL}, which means \code{c(1, 5, M / Md)}, where \code{Md} is the sum of annotation weights and \code{M} is the total number of SNPs.}
+\item{upr}{Upper bounds for \code{c(h2, intercept, eta, fold)}, default is \code{NULL}, which means \code{c(1, 5, 1, M/Md)}, where \code{Md} is the sum of the weights of the annotation. When \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the upper bounds for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
 \item{mode}{If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only). If \code{mode = "memory"}, \code{Dr} is loaded to memory (matrix returned). Default is \code{mode = "disk"}.}
 
-\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
+\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"}.}
 
 \item{norm.method}{The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.}
 

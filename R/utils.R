@@ -120,14 +120,19 @@ list.LD.ref.files <- function(LD.path, suffix = ".rda", full.names = TRUE,
 #' @title log likelihood function without enrichment fold parameter
 #' @noRd
 #' @keywords internal
-log.lik.HDL <- function(param, lam, zr, N, M, lim=exp(-18), fix.intercept=NULL){
-  h2 <- param[1]
-  if(!is.null(fix.intercept)){
-    intercept <- fix.intercept
-  }else{
-    intercept <- param[2]
-  }
-  alpha <- intercept * lam + N/M * h2 * lam**2
+log.lik.HDL <- function(param, lam, zr, N, M, lim=exp(-18),
+  fix.h2=NULL, fix.intercept=NULL, fix.eta=NULL){
+  pp <- rep(NA, 3)
+  if(!is.null(fix.h2)) pp[1] <- fix.h2
+  if(!is.null(fix.intercept)) pp[2] <- fix.intercept
+  if(!is.null(fix.eta)) pp[3] <- fix.eta
+  pp[is.na(pp)] <- param
+  h2 <- pp[1]
+  intercept <- pp[2]
+  eta <- pp[3]
+  alpha <- eta**2 * N * h2 / M - eta +
+    (intercept + eta - 2 * eta * (intercept + eta) * N * h2 / M) * lam +
+    (intercept + eta)**2 * N * h2 / M * lam**2
   alpha <- pmax(alpha, lim)
   logdet <- sum(log(alpha))
   quadra <- sum(zr**2/alpha)
@@ -139,40 +144,34 @@ log.lik.HDL <- function(param, lam, zr, N, M, lim=exp(-18), fix.intercept=NULL){
 #' @noRd
 #' @keywords internal
 log.lik.wg <- function(param, ref.data, Md, M, N,
-  log.file="", fix.h2=NULL, fix.intercept=NULL,
+  log.file="", fix.h2=NULL, fix.intercept=NULL, fix.eta=NULL,
   verbose=FALSE, lim=exp(-18), mc.cores=1, nthreads=1){
   t0 <- Sys.time()
 
-  if(!is.null(fix.h2) && !is.null(fix.intercept)){
-    h2 <- fix.h2
-    intercept <- fix.intercept
-    folds <- param
-  }else if(!is.null(fix.h2)){
-    h2 <- fix.h2
-    intercept <- param[1]
-    folds <- param[-1]
-  }else if(!is.null(fix.intercept)){
-    intercept <- fix.intercept
-    h2 <- param[1]
-    folds <- param[-1]
-  }else{
-    h2 <- param[1]
-    intercept <- param[2]
-    folds <- param[-c(1, 2)]
-  }
+  folds <- param[seq(length(param) - length(Md) + 1, length(param))]
+  params <- param[seq_len(length(param) - length(Md))]
+  pp <- rep(NA, 3)
+  if(!is.null(fix.h2)) pp[1] <- fix.h2
+  if(!is.null(fix.intercept)) pp[2] <- fix.intercept
+  if(!is.null(fix.eta)) pp[3] <- fix.eta
+  pp[is.na(pp)] <- params
+  h2 <- pp[1]
+  intercept <- pp[2]
+  eta <- pp[3]
+
   per.h2d <- (folds - 1) / (M - Md) * h2
   per.h20 <- (h2 - sum(Md * per.h2d)) / M
 
   if(mc.cores>1){
     lnL <- parallel::mclapply(
       ref.data, sHDL:::log.lik,
-      per.h20=per.h20, per.h2d=per.h2d, intercept=intercept,
+      per.h20=per.h20, per.h2d=per.h2d, intercept=intercept, eta=eta,
       N=N, lim=lim, nthreads=nthreads, mc.cores=mc.cores
     )
   }else{
     lnL <- lapply(
       ref.data, sHDL:::log.lik,
-      per.h20=per.h20, per.h2d=per.h2d, intercept=intercept,
+      per.h20=per.h20, per.h2d=per.h2d, intercept=intercept, eta=eta,
       N=N, lim=lim, nthreads=nthreads
     )
   }
@@ -182,8 +181,8 @@ log.lik.wg <- function(param, ref.data, Md, M, N,
   if(verbose){
     folds <- paste0(round(folds, 3), collapse=", ")
     msg <- sprintf(
-      "fold(s): %s h2: %.3f intercept: %.3f lnL: %.3f time: %.3f \n",
-      folds, h2, intercept, lnL, time
+      "fold(s): %s h2: %.3f intercept: %.3f eta: %.3f lnL: %.3f time: %.3f \n",
+      folds, h2, intercept, eta, lnL, time
     )
     sHDL:::log.msg(msg, log.file)
   }
@@ -215,6 +214,10 @@ normD <- function(
   
   
   D <- D[int.snps, , drop=F]
+  dD <- matrix(0, nrow=M, ncol=ncol(D), dimnames=(list(ref.snps, colnames(D))))
+  dD[int.snps, ] <- D[int.snps, ]
+  dD[is.na(dD)] <- 0
+  D <- dD
 
   msg.prefix <- sprintf('Applied `%s` weight nomalization', method)
   minv <- apply(D, 2, min, na.rm=T)
@@ -262,9 +265,6 @@ normD <- function(
     sHDL:::log.msg(warn.msg, log.file, type="warning")
   }
 
-  dD <- matrix(0, nrow=M, ncol=ncol(D), dimnames=(list(ref.snps, colnames(D))))
-  dD[int.snps, ] <- D[int.snps, ]
-  dD[is.na(dD)] <- 0
   return(dD)
 }
 
@@ -273,7 +273,7 @@ normD <- function(
 #' @keywords internal
 #' @importFrom RhpcBLASctl blas_set_num_threads
 #' @importFrom RhpcBLASctl omp_set_num_threads
-log.lik <- function(refd, per.h20, per.h2d, intercept,
+log.lik <- function(refd, per.h20, per.h2d, intercept, eta,
   N, lim = exp(-18), nthreads = 1){
   RhpcBLASctl::blas_set_num_threads(nthreads)
   RhpcBLASctl::omp_set_num_threads(nthreads)
@@ -282,7 +282,9 @@ log.lik <- function(refd, per.h20, per.h2d, intercept,
   
   Dr <- sHDL:::sum.Dr(refd$Dr, per.h2d, length(lam))
 
-  alpha <- intercept * lam + N * per.h20 * lam**2
+  alpha <- eta**2 * N * per.h20 - eta +
+    (intercept + eta - 2 * eta * (intercept + eta) * N * per.h20) * lam +
+    (intercept + eta)**2 * N * per.h20 * lam**2
   alpha <- pmax(alpha, lim)
 
   if(length(Dr) == 1){
@@ -294,19 +296,38 @@ log.lik <- function(refd, per.h20, per.h2d, intercept,
     return(lnL)
   }
 
-  sigma <- diag(alpha) + N * Dr
+  if(eta == 0){
+    sigma <- (intercept**2 * N) * Dr
+  }else{
+    ss <- -eta * (intercept + eta) * N / lam
+    # sigma <- diag(ss + (intercept + eta)**2 * N) %*% Dr +
+    #   Dr %*% diag(ss) + eta**2 * N * (diag(1/lam) %*% Dr %*% diag(1/lam))
+    cc <- (intercept + eta)**2 * N
+    inv.lam <- 1 / lam
+    sigma <- Dr * (ss + cc) + t(t(Dr) * ss) + 
+      eta**2 * N * Dr * outer(inv.lam, inv.lam)
+  }
+  diag(sigma) <- diag(sigma) + alpha
+  
   L <- tryCatch({
     chol(sigma)
   }, error = function(e){
     NA
   })
   if(length(L)==1 && is.na(L)) return(-1e18)
-  logdet <- 2 * sum(log(diag(L)))
+  logdet <- tryCatch({
+    2 * sum(log(diag(L)))
+  }, error = function(e){
+    idx <- diag(L) > 0
+    if(sum(idx)==0) return(NA)
+    return(2 * sum(log(diag(L)[idx])))
+  })
   quadra <- crossprod(zr,
     forwardsolve(L, backsolve(L, zr, transpose=T), upper.tri=T))
   logdet <- as.vector(logdet)
   quadra <- as.vector(quadra)
   lnL <- -0.5 * (logdet + quadra)
+  if(is.na(lnL)) return(-1e18)
   return(lnL)
 }
 

@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,7 +80,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Mismatched LD reference panel</h1>
             
-            <h4 data-toc-skip class="date">2025-05-06</h4>
+            <h4 data-toc-skip class="date">2025-11-04</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/now2014/sHDL/blob/main/vignettes/Rebuild.Rmd" class="external-link"><code>vignettes/Rebuild.Rmd</code></a></small>
       <div class="d-none name"><code>Rebuild.Rmd</code></div>
@@ -207,28 +207,24 @@ script and run in the background with <code>nohup</code>.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gwas1.example</span>, package<span class="op">=</span><span class="st">'HDL'</span><span class="op">)</span></span>
 <span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gwas1.example</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
-<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">M</span>, <span class="fl">1</span>, <span class="fl">0.1</span><span class="op">)</span> <span class="co"># random D vector</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">gwas1.example</span><span class="op">$</span><span class="va">SNP</span></span>
+<span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">M</span>, <span class="fl">1</span>, <span class="fl">0.1</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="co"># random D vector</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">gwas1.example</span><span class="op">$</span><span class="va">SNP</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">D</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">'randA'</span></span>
 <span></span>
 <span><span class="va">res.sHDL</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sHDL.html">sHDL</a></span><span class="op">(</span></span>
 <span>  <span class="va">D</span>, <span class="va">gwas1.example</span>, <span class="va">LD.path.new</span>, nthreads<span class="op">=</span><span class="fl">4</span>,</span>
 <span>  stepwise<span class="op">=</span><span class="cn">TRUE</span>, lam.cut<span class="op">=</span><span class="fl">1</span>, Dr.path<span class="op">=</span><span class="cn">NULL</span>, mode<span class="op">=</span><span class="st">"memory"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co"># Starting sHDL analysis...</span></span>
-<span><span class="co"># 246015 out of 246015 (100.00%) SNPs in reference panel are available in the GWAS.</span></span>
-<span><span class="co"># Transfoming z (D) to zr (Dr)...</span></span>
-<span><span class="co"># D is not NULL and Dr.path is not provided. The default path ./sHDL_Dr will be used.</span></span>
-<span><span class="co"># Annotation name(s): [randD].</span></span>
-<span><span class="co"># Applied `minmax` weight nomalization on [24634 (10.013%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [9.987].</span></span>
-<span><span class="co"># Starting optimization...</span></span>
-<span><span class="co"># Optimization done in 41.753 seconds.</span></span>
-<span><span class="co"># item    estimation      se      p       note</span></span>
-<span><span class="co"># time    41.7533082962036        NA      NA      seconds</span></span>
-<span><span class="co"># h2      0.150313183379785       0.00564781178171049     4.62367581854552e-156   total heritability</span></span>
-<span><span class="co"># intercept       0.985128189916525       0.0126279452459156      0       intercept</span></span>
-<span><span class="co"># fold.randD      0.89182953485042        0.12523419788762        0.387727755380332       enrichment fold</span></span>
-<span><span class="co"># converged       NA      NA      NA      TRUE</span></span>
-<span><span class="co"># message NA      NA      NA      CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL</span></span></code></pre></div>
+<span><span class="co"># print(knitr::kable(res))</span></span>
+<span><span class="co"># |item       |  estimation|        se|       p|note                                             |</span></span>
+<span><span class="co"># |:----------|-----------:|---------:|-------:|:------------------------------------------------|</span></span>
+<span><span class="co"># |time       | 124.6314437|        NA|      NA|seconds                                          |</span></span>
+<span><span class="co"># |h2         |   0.3576401| 0.0752782| 2.0e-06|total heritability                               |</span></span>
+<span><span class="co"># |intercept  |   0.9208751| 0.0241091| 0.0e+00|intercept                                        |</span></span>
+<span><span class="co"># |eta        |  -0.1772308| 0.0396035| 7.6e-06|eta                                              |</span></span>
+<span><span class="co"># |fold.raw.W |   4.1409834| 0.3769147| 0.0e+00|enrichment fold                                  |</span></span>
+<span><span class="co"># |converged  |          NA|        NA|      NA|TRUE                                             |</span></span>
+<span><span class="co"># |message    |          NA|        NA|      NA|CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL |</span></span></code></pre></div>
 </li>
 <li>
 <p>Test <code><a href="https://rdrr.io/pkg/HDL/man/HDL.h2.html" class="external-link">HDL::HDL.h2</a></code></p>

@@ -5,7 +5,7 @@
 #' @param LD.path.new The new path to the re-built LD reference.
 #' @param nthreads Number of threads to use, default \code{nthreads = 1}.
 #' @param lam.cut Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means the same cutoff in the original LD reference panel. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.
-#' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
+#' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"}.
 #' @return The new path to the re-built LD reference.
 #' @export
 #' 

@@ -13,6 +13,7 @@ sHDL.optim(
   stepwise = TRUE,
   fix.h2 = NULL,
   fix.intercept = NULL,
+  fix.eta = NULL,
   lim = exp(-18),
   verbose = FALSE,
   lwr = NULL,
@@ -29,25 +30,27 @@ sHDL.optim(
 
 \item{N}{The sample size of the GWAS.}
 
-\item{start.v}{Starting values for \code{c(h2, intercept, fold1, fold2, ..., foldn)}, where n is the number of annotations. Default is \code{NULL}, which means \code{c(0.1, 1, 1, ..., 1)}. If \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the starting values for \code{h2} or \code{intercept} will be ignored.}
+\item{start.v}{Starting values for \code{c(h2, intercept, eta, fold1, fold2, ..., foldn)}, where n is the number of annotations. Default is \code{NULL}, which means \code{c(0.1, 1, 0, 1, ..., 1)}. If \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the starting values for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
 \item{output.file}{Where the results should be written.}
 
 \item{log.file}{Where the log should be written.}
 
-\item{stepwise}{Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2} and \code{fix.intercept} are not \code{NULL}, \code{stepwise} will be overridden.}
+\item{stepwise}{Whether to estimate enrichment fold by estimating heritability and intercept first, default \code{stepwise = FALSE}. If \code{fix.h2}, \code{fix.intercept} and \code{fix.eta} are not \code{NULL}, \code{stepwise} will be overridden.}
 
 \item{fix.h2}{Whether to fix the heritability to \code{fix.h2} or estimate the heritability, default \code{fix.h2 = NULL}, which means estimate the heritability.}
 
 \item{fix.intercept}{Whether to fix the intercept to \code{fix.intercept} or estimate the intercept, default \code{fix.intercept = NULL}, which means estimate the intercept.}
 
+\item{fix.eta}{Whether to fix the eta to \code{fix.eta} or estimate the eta, default \code{fix.eta = NULL}, which means estimate the eta. If \code{fix.eta} is not \code{NULL}, the eta will be fixed to \code{fix.eta}.}
+
 \item{lim}{Tolerance limitation to ensure the positive-definiteness of covariance matrices, default \code{lim = exp(-18)}.}
 
 \item{verbose}{Whether to print the log on the console, default \code{verbose = FALSE}.}
 
-\item{lwr}{Lower bounds for \code{c(h2, intercept, fold1, fold2, ..., foldn)}. Default is \code{NULL}, which means \code{c(0, 0, 0, 0, ..., 0)}. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the lower bounds for \code{h2} or \code{intercept} will be ignored.}
+\item{lwr}{Lower bounds for \code{c(h2, intercept, eta, fold1, fold2, ..., foldn)}. Default is \code{NULL}, which means \code{c(0, 0, -2, 0, 0, ..., 0)}. When \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the lower bounds for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
-\item{upr}{Upper bounds for \code{c(h2, intercept, fold1, fold2, ..., foldn)}, default is \code{NULL}, which means \code{c(1, 5, M/Md_1, M/Md_2, ..., M/Md_n)}, where \code{Md_i} is the sum of the weights of the i-th annotation. When \code{fix.h2} or \code{fix.intercept} is not \code{NULL}, the upper bounds for \code{h2} or \code{intercept} will be ignored.}
+\item{upr}{Upper bounds for \code{c(h2, intercept, eta, fold1, fold2, ..., foldn)}, default is \code{NULL}, which means \code{c(1, 5, 1, M/Md_1, M/Md_2, ..., M/Md_n)}, where \code{Md_i} is the sum of the weights of the i-th annotation. When \code{fix.h2}, \code{fix.intercept} or \code{fix.eta} is not \code{NULL}, the upper bounds for \code{h2}, \code{intercept} or \code{eta} will be ignored.}
 
 \item{maxit}{Maximum number of iterations, default maxit = 1000.}
 

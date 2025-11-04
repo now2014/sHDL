@@ -221,30 +221,33 @@ Starting sHDL analysis...
 307519 out of 307519 (100.00%) SNPs in reference panel are available in the GWAS.
 Transfoming z (D) to zr (Dr)...
 D is not NULL and Dr.path is not provided. The default path ./sHDL_Dr will be used.
-Applied `minmax` weight nomalization on 147849 (48.078%) annotated variants.
-The theoretical upper boundary for enrichment fold is M / Md = 2.080.
+Annotation name(s): [ENS.gene].
+Applied `minmax` weight nomalization on [147849 (48.078%)] annotated variants. The theoretical upper boundary for enrichment fold is M / Md = [2.080].
+Dr saved to 
 Starting optimization...
-Optimization done in 52.539 seconds.
+Optimization done in 112.997 seconds.
 item    estimation      se      p       note
-time    52.5394132137299        NA      NA      seconds
-h2      0.16391651163241        0.00545604327753226     2.68604947190574e-198   total heritability
-intercept       0.963235890727237       0.0106589577723641      0       intercept
-fold.ENS.gene   1.2739805907671 0.0259721362754955      5.13295507071105e-26    enrichment fold
+time    112.996711730957        NA      NA      seconds
+h2      0.357640057353687       0.0752782467546387      2.02504822923168e-06    total heritability
+intercept       0.920875135658489       0.0241090513453767      3.25119898245832e-319   intercept
+eta     -0.177230823347607      0.039603506139107       7.63649707679419e-06    eta
+fold.ENS.gene   1.1880681869999 0.0304909124069927      6.9155713083808e-10     enrichment fold
 converged       NA      NA      NA      TRUE
-message NA      NA      NA      CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
-Time difference of 2.185567 mins
+message NA      NA      NA      CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH
+Time difference of 2.824235 mins
 ```
 
 ## Results of sHDL
 
-|item          | estimation|        se|              p|note                                             |
-|:-------------|----------:|---------:|--------------:|:------------------------------------------------|
-|time          | 52.5394132|        NA|             NA|seconds                                          |
-|h2            |  0.1639165| 0.0054560|  2.686049e-198|total heritability                               |
-|intercept     |  0.9632359| 0.0106590|   0.000000e+00|intercept                                        |
-|fold.ENS.gene |  1.2739806| 0.0259721|   5.132955e-26|enrichment fold                                  |
-|converged     |         NA|        NA|             NA|TRUE                                             |
-|message       |         NA|        NA|             NA|CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL |
+|item          |  estimation|        se|       p|note                                            |
+|:-------------|-----------:|---------:|-------:|:-----------------------------------------------|
+|time          | 112.9967117|        NA|      NA|seconds                                         |
+|h2            |   0.3576401| 0.0752782| 2.0e-06|total heritability                              |
+|intercept     |   0.9208751| 0.0241091| 0.0e+00|intercept                                       |
+|eta           |  -0.1772308| 0.0396035| 7.6e-06|eta                                             |
+|fold.ENS.gene |   1.1880682| 0.0304909| 0.0e+00|enrichment fold                                 |
+|converged     |          NA|        NA|      NA|TRUE                                            |
+|message       |          NA|        NA|      NA|CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH |
 
 **Notice**:
 

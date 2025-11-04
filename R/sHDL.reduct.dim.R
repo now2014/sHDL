@@ -8,7 +8,7 @@
 #' @param overwrite Whether to overwrite the existing Dr matrices, default overwrite = FALSE.
 #' @param mode Whether to store Dr to disk or memory, default \code{mode = "disk"}. If \code{mode = "disk"}, \code{Dr} is stored to disk (path returned only) and lam are not returned. If \code{mode = "memory"}, \code{Dr} and \code{lam} are returned.
 #' @param mc.cores Number of cores to use for parallelization, default \code{mc.cores = 1}.
-#' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.
+#' @param pattern Chromosome and picece pattern of LD files, default is \code{".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"}.
 #' @param norm.method The normalization method, either \code{"minmax"} (default), \code{"scaled"} or \code{"none"}. If \code{"minmax"}, the annotation weight vector \code{D} is normalized to [0, 1]. If \code{"scaled"}, the sum of normalized vector \code{D} is scaled to the number of annotated SNPs. If \code{"none"}, the annotation weight vector \code{D} is not normalized.
 #' @param log.file Where the log should be written. If you do not specify a file, the log will be printed on the console.
 #' @param nthreads Number of threads to use for matrix operations, default \code{nthreads = 1}. The default value is suitable for most cases, do not change it unless you are sure about the performance.

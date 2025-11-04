@@ -24,7 +24,7 @@ sHDL.rebuild.ref(
 
 \item{lam.cut}{Eigenvalue cutoff for LD matrices, default \code{lam.cut = NULL}, which means the same cutoff in the original LD reference panel. For analyses with a limited number of traits and annotations, a lower cutoff (such as 0.1, or even not using a cutoff at all) is recommended. For large-scale analyses, a higher cutoff (such as 1)  is recommended, to yield fast computation.}
 
-\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"}.}
+\item{pattern}{Chromosome and picece pattern of LD files, default is \code{".*chr(\\\\d{1,2})\\\\.(\\\\d{1,2})[_\\\\.].*"}.}
 }
 \value{
 The new path to the re-built LD reference.
