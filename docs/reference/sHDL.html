@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,7 @@
 <span>  <span class="va">LD.path</span>,</span>
 <span>  output.file <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mc.cores <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  stepwise <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  stepwise <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  fill.missing.N <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"min"</span>, <span class="st">"max"</span>, <span class="st">"median"</span>, <span class="st">"mean"</span><span class="op">)</span>,</span>
 <span>  lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">18</span><span class="op">)</span>,</span>
 <span>  lam.cut <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -72,9 +72,10 @@
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  fix.h2 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fix.intercept <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fix.eta <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maxit <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  pgtol <span class="op">=</span> <span class="fl">0.001</span>,</span>
-<span>  start.v <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  start.v <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lwr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  upr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"disk"</span>, <span class="st">"memory"</span><span class="op">)</span>,</span>
@@ -110,7 +111,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 
 <dt>stepwise</dt>
-<dd><p>Whether to estimate enrichment fold by estimating heritability and intercept first, default <code>stepwise = FALSE</code>. If <code>fix.h2</code> and <code>fix.intercept</code> are not <code>NULL</code>, <code>stepwise</code> will be overridden.</p></dd>
+<dd><p>Whether to estimate enrichment fold by estimating heritability, intercept and eta first, default <code>stepwise = FALSE</code>. If <code>fix.h2</code> and <code>fix.intercept</code> are not <code>NULL</code>, <code>stepwise</code> will be overridden.</p></dd>
 
 
 <dt>fill.missing.N</dt>
@@ -145,6 +146,10 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 <dd><p>Whether to fix the intercept to <code>fix.intercept</code> or estimate the intercept, default <code>fix.intercept = NULL</code>, which means estimate the intercept.</p></dd>
 
 
+<dt>fix.eta</dt>
+<dd><p>Whether to fix the eta to <code>fix.eta</code> or estimate the eta, default <code>fix.eta = NULL</code>, which means estimate the eta. If <code>fix.eta</code> is not <code>NULL</code>, the eta will be fixed to <code>fix.eta</code>.</p></dd>
+
+
 <dt>maxit</dt>
 <dd><p>Maximum number of iterations, default <code>maxit = 1000</code>.</p></dd>
 
@@ -154,15 +159,15 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 
 <dt>start.v</dt>
-<dd><p>A vector of starting values <code>c(h2, intercept, fold)</code> for optimization.</p></dd>
+<dd><p>A vector of starting values <code>c(h2, intercept, eta, fold)</code> for optimization. Default is <code>NULL</code>, which means <code>c(0.1, 1, 0, 1)</code>. If <code>fix.h2</code>, <code>fix.intercept</code> or <code>fix.eta</code> is not <code>NULL</code>, the starting values for <code>h2</code>, <code>intercept</code> or <code>eta</code> will be ignored.</p></dd>
 
 
 <dt>lwr</dt>
-<dd><p>Lower bounds for <code>c(h2, intercept, fold)</code>. Default is <code>NULL</code>, which means <code>c(0, 0.1, 0)</code>.</p></dd>
+<dd><p>Lower bounds for <code>c(h2, intercept, eta, fold)</code>. Default is <code>NULL</code>, which means <code>c(0, 0, -2, 0)</code>. When <code>fix.h2</code>, <code>fix.intercept</code> or <code>fix.eta</code> is not <code>NULL</code>, the lower bounds for <code>h2</code>, <code>intercept</code> or <code>eta</code> will be ignored.</p></dd>
 
 
 <dt>upr</dt>
-<dd><p>Upper bounds for <code>c(h2, intercept, fold)</code>. Default is <code>NULL</code>, which means <code>c(1, 5, M / Md)</code>, where <code>Md</code> is the sum of annotation weights and <code>M</code> is the total number of SNPs.</p></dd>
+<dd><p>Upper bounds for <code>c(h2, intercept, eta, fold)</code>, default is <code>NULL</code>, which means <code>c(1, 5, 1, M/Md)</code>, where <code>Md</code> is the sum of the weights of the annotation. When <code>fix.h2</code>, <code>fix.intercept</code> or <code>fix.eta</code> is not <code>NULL</code>, the upper bounds for <code>h2</code>, <code>intercept</code> or <code>eta</code> will be ignored.</p></dd>
 
 
 <dt>mode</dt>
@@ -170,7 +175,7 @@ N, sample size; Z, z-score; If Z is not given, alternatively, you may provide: b
 
 
 <dt>pattern</dt>
-<dd><p>Chromosome and picece pattern of LD files, default is <code>".*chr(\d{1,2})\.(\d{1,2})[_\.].*"</code>.</p></dd>
+<dd><p>Chromosome and picece pattern of LD files, default is <code>".*chr(\\d{1,2})\\.(\\d{1,2})[_\\.].*"</code>.</p></dd>
 
 
 <dt>norm.method</dt>

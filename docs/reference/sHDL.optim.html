@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sHDL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,6 +66,7 @@
 <span>  stepwise <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  fix.h2 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fix.intercept <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fix.eta <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">18</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lwr <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -89,7 +90,7 @@
 
 
 <dt>start.v</dt>
-<dd><p>Starting values for <code>c(h2, intercept, fold1, fold2, ..., foldn)</code>, where n is the number of annotations. Default is <code>NULL</code>, which means <code>c(0.1, 1, 1, ..., 1)</code>. If <code>fix.h2</code> or <code>fix.intercept</code> is not <code>NULL</code>, the starting values for <code>h2</code> or <code>intercept</code> will be ignored.</p></dd>
+<dd><p>Starting values for <code>c(h2, intercept, eta, fold1, fold2, ..., foldn)</code>, where n is the number of annotations. Default is <code>NULL</code>, which means <code>c(0.1, 1, 0, 1, ..., 1)</code>. If <code>fix.h2</code>, <code>fix.intercept</code> or <code>fix.eta</code> is not <code>NULL</code>, the starting values for <code>h2</code>, <code>intercept</code> or <code>eta</code> will be ignored.</p></dd>
 
 
 <dt>output.file</dt>
@@ -101,7 +102,7 @@
 
 
 <dt>stepwise</dt>
-<dd><p>Whether to estimate enrichment fold by estimating heritability and intercept first, default <code>stepwise = FALSE</code>. If <code>fix.h2</code> and <code>fix.intercept</code> are not <code>NULL</code>, <code>stepwise</code> will be overridden.</p></dd>
+<dd><p>Whether to estimate enrichment fold by estimating heritability and intercept first, default <code>stepwise = FALSE</code>. If <code>fix.h2</code>, <code>fix.intercept</code> and <code>fix.eta</code> are not <code>NULL</code>, <code>stepwise</code> will be overridden.</p></dd>
 
 
 <dt>fix.h2</dt>
@@ -110,6 +111,10 @@
 
 <dt>fix.intercept</dt>
 <dd><p>Whether to fix the intercept to <code>fix.intercept</code> or estimate the intercept, default <code>fix.intercept = NULL</code>, which means estimate the intercept.</p></dd>
+
+
+<dt>fix.eta</dt>
+<dd><p>Whether to fix the eta to <code>fix.eta</code> or estimate the eta, default <code>fix.eta = NULL</code>, which means estimate the eta. If <code>fix.eta</code> is not <code>NULL</code>, the eta will be fixed to <code>fix.eta</code>.</p></dd>
 
 
 <dt>lim</dt>
@@ -121,11 +126,11 @@
 
 
 <dt>lwr</dt>
-<dd><p>Lower bounds for <code>c(h2, intercept, fold1, fold2, ..., foldn)</code>. Default is <code>NULL</code>, which means <code>c(0, 0, 0, 0, ..., 0)</code>. When <code>fix.h2</code> or <code>fix.intercept</code> is not <code>NULL</code>. When <code>fix.h2</code> or <code>fix.intercept</code> is not <code>NULL</code>, the lower bounds for <code>h2</code> or <code>intercept</code> will be ignored.</p></dd>
+<dd><p>Lower bounds for <code>c(h2, intercept, eta, fold1, fold2, ..., foldn)</code>. Default is <code>NULL</code>, which means <code>c(0, 0, -2, 0, 0, ..., 0)</code>. When <code>fix.h2</code>, <code>fix.intercept</code> or <code>fix.eta</code> is not <code>NULL</code>, the lower bounds for <code>h2</code>, <code>intercept</code> or <code>eta</code> will be ignored.</p></dd>
 
 
 <dt>upr</dt>
-<dd><p>Upper bounds for <code>c(h2, intercept, fold1, fold2, ..., foldn)</code>, default is <code>NULL</code>, which means <code>c(1, 5, M/Md_1, M/Md_2, ..., M/Md_n)</code>, where <code>Md_i</code> is the sum of the weights of the i-th annotation. When <code>fix.h2</code> or <code>fix.intercept</code> is not <code>NULL</code>, the upper bounds for <code>h2</code> or <code>intercept</code> will be ignored.</p></dd>
+<dd><p>Upper bounds for <code>c(h2, intercept, eta, fold1, fold2, ..., foldn)</code>, default is <code>NULL</code>, which means <code>c(1, 5, 1, M/Md_1, M/Md_2, ..., M/Md_n)</code>, where <code>Md_i</code> is the sum of the weights of the i-th annotation. When <code>fix.h2</code>, <code>fix.intercept</code> or <code>fix.eta</code> is not <code>NULL</code>, the upper bounds for <code>h2</code>, <code>intercept</code> or <code>eta</code> will be ignored.</p></dd>
 
 
 <dt>maxit</dt>
